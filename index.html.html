@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProPrintIndia — Recreate Wallpaper Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fraunces:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f9f9f9;
+  --white: #fff;
+  --ink: #111;
+  --mid: #666;
+  --light: #aaa;
+  --border: #e8e8e8;
+  --border2: #d0d0d0;
+  --accent: #7c3aed;
+  --accent-bg: #f5f3ff;
+  --green: #10b981;
+  --green-bg: #ecfdf5;
+  --red: #ef4444;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; }
+
+/* NAV */
+nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.logo-box { width: 28px; height: 28px; background: var(--ink); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700; }
+.nav-tag { font-size: 11px; font-weight: 600; background: var(--accent-bg); color: var(--accent); padding: 3px 10px; border-radius: 100px; border: 1px solid #ddd6fe; }
+
+/* PAGE */
+.page { max-width: 660px; margin: 0 auto; padding: 48px 20px 80px; }
+
+/* HERO */
+.hero { text-align: center; margin-bottom: 40px; }
+.hero-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-bg); color: var(--accent); border: 1px solid #ddd6fe; border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; margin-bottom: 16px; }
+.hero-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.hero h1 { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 700; line-height: 1.15; letter-spacing: -.8px; margin-bottom: 12px; }
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero p { color: var(--mid); font-size: 15px; max-width: 420px; margin: 0 auto 20px; line-height: 1.65; }
+.pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.pill { background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 4px 12px; font-size: 12px; color: var(--mid); }
+
+/* CARD */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.card-head { font-size: 13px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.step-circle { width: 20px; height: 20px; background: var(--ink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* API KEYS */
+.key-row { margin-bottom: 12px; }
+.key-label { font-size: 11px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+.input-row { display: flex; gap: 8px; }
+.key-input { flex: 1; padding: 9px 12px; border: 1px solid var(--border2); border-radius: 7px; font-family: monospace; font-size: 13px; color: var(--ink); background: var(--bg); outline: none; transition: border .15s; }
+.key-input:focus { border-color: var(--ink); }
+.key-input::placeholder { color: var(--light); }
+.btn-save { padding: 9px 16px; background: var(--white); border: 1px solid var(--border2); border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; transition: all .15s; }
+.btn-save:hover { border-color: var(--ink); }
+.btn-save.saved { border-color: var(--green); color: var(--green); }
+.key-hint { font-size: 11px; color: var(--light); margin-top: 5px; }
+.key-hint a { color: var(--mid); }
+
+/* UPLOAD */
+.upload-zone { border: 2px dashed var(--border2); border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all .15s; }
+.upload-zone:hover, .upload-zone.over { border-color: var(--accent); background: var(--accent-bg); }
+.upload-icon { font-size: 28px; margin-bottom: 10px; }
+.upload-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.upload-sub { font-size: 12px; color: var(--light); }
+#fileInput { display: none; }
+.file-row { display: none; align-items: center; gap: 12px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+.file-row.show { display: flex; }
+.file-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 12px; color: var(--light); }
+.file-change { font-size: 12px; color: var(--mid); cursor: pointer; text-decoration: underline; flex-shrink: 0; }
+.file-change:hover { color: var(--ink); }
+
+.error-box { display: none; padding: 11px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 7px; font-size: 13px; color: var(--red); margin-top: 12px; }
+.error-box.show { display: block; }
+
+.btn-recreate { width: 100%; padding: 13px; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: white; }
+.btn-recreate:hover:not(:disabled) { background: #6d28d9; }
+.btn-recreate:disabled { opacity: .4; cursor: not-allowed; }
+
+/* PROGRESS */
+.prog-card { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.prog-card.show { display: block; }
+.prog-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.prog-label { font-size: 13px; font-weight: 500; }
+.prog-pct { font-size: 13px; font-weight: 700; color: var(--accent); }
+.prog-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.prog-fill { height: 100%; border-radius: 4px; transition: width .5s ease; width: 0%; background: var(--accent); }
+.prog-steps { display: flex; justify-content: space-between; }
+.ps { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; }
+.ps::after { content: ''; position: absolute; top: 7px; left: 50%; right: -50%; height: 1px; background: var(--border); }
+.ps:last-child::after { display: none; }
+.ps-dot { width: 14px; height: 14px; border-radius: 50%; background: white; border: 2px solid var(--border2); position: relative; z-index: 1; transition: all .3s; }
+.ps.done .ps-dot { background: var(--green); border-color: var(--green); }
+.ps.act .ps-dot { background: var(--accent); border-color: var(--accent); animation: glow 1.5s ease infinite; }
+@keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)} 50%{box-shadow:0 0 0 6px rgba(124,58,237,0)} }
+.ps-lbl { font-size: 10px; color: var(--light); font-weight: 500; text-align: center; }
+.ps.done .ps-lbl, .ps.act .ps-lbl { color: var(--mid); }
+.prog-msg { margin-top: 16px; padding: 10px 14px; background: var(--bg); border-radius: 6px; font-size: 12px; color: var(--mid); text-align: center; }
+
+/* RESULT */
+.result-card { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.result-card.show { display: block; }
+.result-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.result-title { font-size: 15px; font-weight: 600; }
+.res-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; background: var(--accent-bg); color: var(--accent); }
+
+/* PATTERN NAME */
+.pattern-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 4px; letter-spacing: -.3px; }
+.pattern-style { font-size: 13px; color: var(--mid); margin-bottom: 20px; }
+
+/* DESIGN OUTPUT */
+.design-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.design-box { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.design-box-label { padding: 8px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--mid); background: var(--bg); border-bottom: 1px solid var(--border); }
+.design-box img { width: 100%; display: block; aspect-ratio: 1; object-fit: cover; }
+.design-box-loading { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+
+/* COLOR PALETTE */
+.palette-section { margin-bottom: 20px; }
+.palette-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--mid); margin-bottom: 10px; }
+.palette-colors { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-chip { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.color-swatch { width: 40px; height: 40px; border-radius: 8px; border: 1px solid rgba(0,0,0,.08); cursor: pointer; transition: transform .15s; }
+.color-swatch:hover { transform: scale(1.1); }
+.color-hex { font-size: 10px; color: var(--light); font-family: monospace; }
+
+/* DESIGN DETAILS */
+.details-section { padding: 16px; background: var(--bg); border-radius: 8px; margin-bottom: 20px; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+.detail-key { color: var(--mid); }
+.detail-val { font-weight: 500; color: var(--ink); }
+
+/* DOWNLOAD ROW */
+.dl-row { display: flex; gap: 10px; }
+.btn-dl { flex: 1; padding: 10px; background: var(--ink); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+.btn-dl:hover { opacity: .8; }
+.btn-another { flex: 1; padding: 10px; background: transparent; color: var(--mid); border: 1px solid var(--border2); border-radius: 7px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.btn-another:hover { color: var(--ink); border-color: var(--ink); }
+
+/* HOW IT WORKS */
+.how-section { margin-top: 56px; }
+.sec-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--light); margin-bottom: 4px; }
+.sec-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; letter-spacing: -.4px; margin-bottom: 20px; }
+.how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.how-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.how-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: var(--border2); line-height: 1; margin-bottom: 8px; }
+.how-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.how-desc { font-size: 12px; color: var(--mid); line-height: 1.5; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: all .25s; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.15); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* FOOTER */
+footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--border); background: white; display: flex; justify-content: space-between; align-items: center; }
+.foot-logo { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; }
+.foot-note { font-size: 12px; color: var(--light); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.sp { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+.sp-dark { width: 24px; height: 24px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+
+@media (max-width: 580px) {
+  nav { padding: 0 16px; }
+  .page { padding: 28px 16px 60px; }
+  .hero h1 { font-size: 28px; }
+  .design-grid { grid-template-columns: 1fr; }
+  .how-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 6px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-box">P</div>
+    ProPrintIndia
+  </div>
+  <div class="nav-tag">✦ Recreate</div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag"><div class="hero-dot"></div> AI Design Recognition</div>
+    <h1>Upload a photo.<br>Get the <em>wallpaper design.</em></h1>
+    <p>Client sent a random room photo and loves the wallpaper? Upload it. Our AI identifies the design and recreates it as a flat, print-ready pattern.</p>
+    <div class="pills">
+      <span class="pill">No prompting needed</span>
+      <span class="pill">Flat design output</span>
+      <span class="pill">Color palette included</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 — API KEYS -->
+  <div class="card">
+    <div class="card-head"><div class="step-circle">1</div> API Keys</div>
+
+    <div class="key-row">
+      <div class="key-label">Anthropic API Key (for design analysis)</div>
+      <div class="input-row">
+        <input class="key-input" type="password" id="anthropicKey" placeholder="sk-ant-xxxxxxxxxxxxxxxx">
+        <button class="btn-save" id="saveAnthropicBtn" onclick="saveAnthropicKey()">Save</button>
+      </div>
+      <div class="key-hint">Get it at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys</div>
+    </div>
+
+    <div class="key-row">
+      <div class="key-label">Replicate API Key (for image generation)</div>
+      <div class="input-row">
+        <input class="key-input" type="password" id="replicateKey" placeholder="r8_xxxxxxxxxxxxxxxx">
+        <button class="btn-save" id="saveReplicateBtn" onclick="saveReplicateKey()">Save</button>
+      </div>
+      <div class="key-hint">Get it at <a href="https://replicate.com" target="_blank">replicate.com</a> → Account → API Tokens</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — UPLOAD -->
+  <div class="card">
+    <div class="card-head"><div class="step-circle">2</div> Upload room photo</div>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📸</div>
+      <div class="upload-title">Drop room photo here or click to browse</div>
+      <div class="upload-sub">Any camera photo showing a wall, room, or space · JPG · PNG · up to 10MB</div>
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+    </div>
+
+    <div class="file-row" id="fileRow">
+      <img class="file-thumb" id="fileThumb" src="" alt="">
+      <div class="file-info">
+        <div class="file-name" id="fileName">—</div>
+        <div class="file-size" id="fileSize">—</div>
+      </div>
+      <span class="file-change" onclick="document.getElementById('fileInput').click()">Change</span>
+    </div>
+
+    <div class="error-box" id="errBox"></div>
+
+    <button class="btn-recreate" id="recreateBtn" onclick="recreate()" disabled>
+      ✦ Identify &amp; Recreate Design
+    </button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-card" id="progCard">
+    <div class="prog-top">
+      <div class="prog-label" id="progLabel">Analysing...</div>
+      <div class="prog-pct" id="progPct">0%</div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-steps">
+      <div class="ps" id="s1"><div class="ps-dot"></div><div class="ps-lbl">Analyse</div></div>
+      <div class="ps" id="s2"><div class="ps-dot"></div><div class="ps-lbl">Identify</div></div>
+      <div class="ps" id="s3"><div class="ps-dot"></div><div class="ps-lbl">Generate</div></div>
+      <div class="ps" id="s4"><div class="ps-dot"></div><div class="ps-lbl">Done</div></div>
+    </div>
+    <div class="prog-msg" id="progMsg">Starting analysis...</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resCard">
+    <div class="result-top">
+      <div class="result-title">Design Recreated</div>
+      <div class="res-badge">✓ Print Ready</div>
+    </div>
+
+    <div class="pattern-name" id="patternName">—</div>
+    <div class="pattern-style" id="patternStyle">—</div>
+
+    <div class="design-grid">
+      <div class="design-box">
+        <div class="design-box-label">Original Photo</div>
+        <img id="originalImg" src="" alt="Original">
+      </div>
+      <div class="design-box">
+        <div class="design-box-label">Recreated Design</div>
+        <div class="design-box-loading" id="generatedLoading"><div class="sp-dark"></div></div>
+        <img id="generatedImg" src="" alt="Generated" style="display:none">
+      </div>
+    </div>
+
+    <div class="palette-section">
+      <div class="palette-label">Colour Palette</div>
+      <div class="palette-colors" id="paletteColors"></div>
+    </div>
+
+    <div class="details-section">
+      <div class="detail-row"><span class="detail-key">Pattern Type</span><span class="detail-val" id="detPattern">—</span></div>
+      <div class="detail-row"><span class="detail-key">Style</span><span class="detail-val" id="detStyle">—</span></div>
+      <div class="detail-row"><span class="detail-key">Primary Motif</span><span class="detail-val" id="detMotif">—</span></div>
+      <div class="detail-row"><span class="detail-key">Repeat Type</span><span class="detail-val" id="detRepeat">—</span></div>
+      <div class="detail-row"><span class="detail-key">Print Suitability</span><span class="detail-val" id="detSuitability">—</span></div>
+    </div>
+
+    <div class="dl-row">
+      <button class="btn-dl" onclick="dlDesign()">↓ Download Design</button>
+      <button class="btn-another" onclick="resetAll()">Try another image</button>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-section">
+    <div class="sec-label">How it works</div>
+    <div class="sec-title">Three steps, zero prompting</div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-title">Upload any photo</div>
+        <div class="how-desc">A random room click, a hotel lobby, a magazine page — anything showing a wall or design you like.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-title">AI identifies the design</div>
+        <div class="how-desc">Claude analyses the image, identifies the pattern style, motifs, colours, and repeat structure — automatically.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-title">Get the flat design</div>
+        <div class="how-desc">A clean, flat, print-ready wallpaper design — with colour palette and pattern name. Ready for your printing machine.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="foot-logo">ProPrintIndia</div>
+  <div class="foot-note">Built for Indian print professionals · Powered by AI</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// State
+let anthropicKey = localStorage.getItem('ppi_ak') || '';
+let replicateKey = localStorage.getItem('ppi_rk') || '';
+let imgData = null;
+let generatedUrl = null;
+let analysisResult = null;
+
+// Init
+if (anthropicKey) { document.getElementById('anthropicKey').value = anthropicKey; markSaved('saveAnthropicBtn'); }
+if (replicateKey) { document.getElementById('replicateKey').value = replicateKey; markSaved('saveReplicateBtn'); }
+
+function markSaved(id) { const b = document.getElementById(id); b.textContent = '✓ Saved'; b.classList.add('saved'); }
+
+function saveAnthropicKey() {
+  const k = document.getElementById('anthropicKey').value.trim();
+  if (!k) { showToast('Enter your Anthropic API key'); return; }
+  anthropicKey = k; localStorage.setItem('ppi_ak', k); markSaved('saveAnthropicBtn'); showToast('Anthropic key saved');
+}
+
+function saveReplicateKey() {
+  const k = document.getElementById('replicateKey').value.trim();
+  if (!k) { showToast('Enter your Replicate API key'); return; }
+  replicateKey = k; localStorage.setItem('ppi_rk', k); markSaved('saveReplicateBtn'); showToast('Replicate key saved');
+}
+
+// Drag drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f?.type.startsWith('image/')) doFile(f); });
+
+function handleFile(e) { const f = e.target.files[0]; if (f) doFile(f); }
+
+function doFile(f) {
+  if (f.size > 10 * 1024 * 1024) { showToast('Max 10MB'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    imgData = e.target.result;
+    document.getElementById('fileThumb').src = imgData;
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = (f.size / 1024).toFixed(0) + ' KB';
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('fileRow').classList.add('show');
+    document.getElementById('recreateBtn').disabled = false;
+    hideErr();
+  };
+  r.readAsDataURL(f);
+}
+
+async function recreate() {
+  if (!imgData) { showToast('Upload a photo first'); return; }
+  if (!anthropicKey) { showToast('Save your Anthropic API key first'); return; }
+  if (!replicateKey) { showToast('Save your Replicate API key first'); return; }
+
+  hideErr();
+  document.getElementById('resCard').classList.remove('show');
+
+  const btn = document.getElementById('recreateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sp"></span> Analysing design...';
+
+  showProg();
+  setStep(1); setProg(10, 'Sending image to Claude for analysis...');
+
+  try {
+    // STEP 1 — Claude analyses the image
+    const base64 = imgData.split(',')[1];
+    const mediaType = imgData.split(';')[0].split(':')[1];
+
+    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mediaType, data: base64 }
+            },
+            {
+              type: 'text',
+              text: `You are an expert wallpaper and textile pattern designer. Analyse this image and identify the wallpaper or wall art design visible.
+
+Return ONLY a JSON object with these exact fields, no other text:
+{
+  "patternName": "descriptive name for this pattern (e.g. Blue Willow Chinoiserie, Tropical Monstera Leaf, Art Deco Fan, etc.)",
+  "style": "design style (e.g. Chinoiserie, Botanical, Geometric, Floral, Abstract, Traditional Indian, Damask, etc.)",
+  "primaryMotif": "main design element (e.g. birds and branches, tropical leaves, geometric hexagons, etc.)",
+  "repeatType": "how pattern repeats (e.g. half-drop repeat, straight repeat, mirror repeat, etc.)",
+  "colors": ["#hexcode1", "#hexcode2", "#hexcode3", "#hexcode4", "#hexcode5"],
+  "printSuitability": "Excellent / Good / Moderate",
+  "imageGenerationPrompt": "A flat seamless wallpaper design pattern, [describe the exact pattern in detail: motifs, arrangement, colors, style, background color, line quality, artistic style]. The design should be clean, flat illustration, white or light background, suitable for wallpaper printing, no room or furniture, no perspective, top-down flat view, professional textile design, high detail, vector art style."
+}`
+            }
+          ]
+        }]
+      })
+    });
+
+    if (!claudeRes.ok) {
+      const e = await claudeRes.json();
+      throw new Error(e.error?.message || `Claude API error ${claudeRes.status}`);
+    }
+
+    const claudeData = await claudeRes.json();
+    const rawText = claudeData.content[0].text.trim();
+
+    // Parse JSON from Claude response
+    let analysis;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      analysis = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
+    } catch(e) {
+      throw new Error('Could not parse design analysis. Please try again.');
+    }
+
+    analysisResult = analysis;
+    setStep(2); setProg(40, `Identified: ${analysis.patternName} · Generating design...`);
+
+    // Show pattern info immediately
+    document.getElementById('patternName').textContent = analysis.patternName || 'Unknown Pattern';
+    document.getElementById('patternStyle').textContent = analysis.style + ' · ' + analysis.primaryMotif;
+    document.getElementById('detPattern').textContent = analysis.primaryMotif || '—';
+    document.getElementById('detStyle').textContent = analysis.style || '—';
+    document.getElementById('detMotif').textContent = analysis.primaryMotif || '—';
+    document.getElementById('detRepeat').textContent = analysis.repeatType || '—';
+    document.getElementById('detSuitability').textContent = analysis.printSuitability || '—';
+
+    // Render color palette
+    renderPalette(analysis.colors || []);
+
+    // Show original photo
+    document.getElementById('originalImg').src = imgData;
+
+    // Show result card with loading state
+    document.getElementById('resCard').classList.add('show');
+    document.getElementById('generatedLoading').style.display = 'flex';
+    document.getElementById('generatedImg').style.display = 'none';
+
+    setTimeout(() => document.getElementById('resCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+
+    // STEP 2 — Generate flat design with Replicate
+    setStep(3); setProg(60, 'Generating flat wallpaper design...');
+
+    const prompt = analysis.imageGenerationPrompt;
+
+    const replicateRes = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${replicateKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'wait'
+      },
+      body: JSON.stringify({
+        version: 'ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4',
+        input: {
+          prompt: prompt,
+          width: 1024,
+          height: 1024,
+          num_inference_steps: 30,
+          guidance_scale: 7.5,
+          negative_prompt: 'room, furniture, people, 3d, perspective, shadows, photograph, realistic, blurry, low quality'
+        }
+      })
+    });
+
+    if (!replicateRes.ok) {
+      const e = await replicateRes.json();
+      throw new Error(e.detail || `Replicate error ${replicateRes.status}`);
+    }
+
+    let pred = await replicateRes.json();
+
+    // Poll
+    let i = 0;
+    while (pred.status !== 'succeeded' && pred.status !== 'failed' && i < 60) {
+      await sleep(2000);
+      i++;
+      setProg(60 + Math.min(i / 60 * 35, 34), 'Rendering pattern details...');
+      const p = await fetch(`https://api.replicate.com/v1/predictions/${pred.id}`, {
+        headers: { 'Authorization': `Token ${replicateKey}` }
+      });
+      pred = await p.json();
+    }
+
+    if (pred.status === 'failed') throw new Error(pred.error || 'Image generation failed. Try again.');
+    if (pred.status !== 'succeeded' || !pred.output) throw new Error('Generation timed out. Please try again.');
+
+    generatedUrl = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+
+    setStep(4); setProg(100, 'Design recreated successfully!');
+    await sleep(400);
+
+    // Show generated image
+    document.getElementById('generatedLoading').style.display = 'none';
+    document.getElementById('generatedImg').src = generatedUrl;
+    document.getElementById('generatedImg').style.display = 'block';
+
+    hideProg();
+    btn.disabled = false;
+    btn.innerHTML = '✦ Identify &amp; Recreate Design';
+    showToast('Design recreated! Download when ready.');
+
+  } catch (err) {
+    hideProg();
+    showErr(err.message);
+    document.getElementById('generatedLoading').style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '✦ Identify &amp; Recreate Design';
+  }
+}
+
+function renderPalette(colors) {
+  const container = document.getElementById('paletteColors');
+  container.innerHTML = '';
+  const defaults = ['#2d4a3e', '#c8b89a', '#f0e8d8', '#8b6914', '#4a6741'];
+  const palette = colors.length > 0 ? colors : defaults;
+  palette.forEach(hex => {
+    const chip = document.createElement('div');
+    chip.className = 'color-chip';
+    chip.innerHTML = `
+      <div class="color-swatch" style="background:${hex}" title="Click to copy ${hex}" onclick="copyColor('${hex}')"></div>
+      <div class="color-hex">${hex}</div>
+    `;
+    container.appendChild(chip);
+  });
+}
+
+function copyColor(hex) {
+  navigator.clipboard.writeText(hex).then(() => showToast(`Copied ${hex}`));
+}
+
+function dlDesign() {
+  if (!generatedUrl) return;
+  const a = document.createElement('a');
+  a.href = generatedUrl;
+  a.download = `proprintindia-${(analysisResult?.patternName || 'design').replace(/\s+/g, '-').toLowerCase()}.png`;
+  a.target = '_blank';
+  a.click();
+}
+
+function resetAll() {
+  imgData = null; generatedUrl = null; analysisResult = null;
+  document.getElementById('fileRow').classList.remove('show');
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('recreateBtn').disabled = true;
+  document.getElementById('recreateBtn').innerHTML = '✦ Identify &amp; Recreate Design';
+  document.getElementById('resCard').classList.remove('show');
+  hideErr();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Progress helpers
+function showProg() { document.getElementById('progCard').classList.add('show'); ['s1','s2','s3','s4'].forEach(id => document.getElementById(id).className = 'ps'); }
+function hideProg() { document.getElementById('progCard').classList.remove('show'); }
+function setProg(pct, msg) {
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = Math.round(pct) + '%';
+  document.getElementById('progMsg').textContent = msg;
+}
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('s' + i).className = i < n ? 'ps done' : i === n ? 'ps act' : 'ps';
+  }
+}
+
+function showErr(msg) { const b = document.getElementById('errBox'); b.textContent = '⚠ ' + msg; b.classList.add('show'); }
+function hideErr() { document.getElementById('errBox').classList.remove('show'); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
