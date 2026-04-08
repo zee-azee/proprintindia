@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintSharp.ai — Print-Ready Image Enhancement</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fraunces:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f9f9f9;
+  --white: #ffffff;
+  --ink: #111;
+  --mid: #666;
+  --light: #aaa;
+  --border: #e8e8e8;
+  --border2: #d0d0d0;
+  --crisp: #f59e0b;
+  --crisp-bg: #fffbeb;
+  --pro: #10b981;
+  --pro-bg: #ecfdf5;
+  --red: #ef4444;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; }
+
+/* NAV */
+nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.logo-box { width: 28px; height: 28px; background: var(--ink); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 700; }
+.nav-right { display: flex; align-items: center; gap: 20px; }
+.nav-link { color: var(--mid); font-size: 13px; cursor: pointer; transition: color .15s; }
+.nav-link:hover { color: var(--ink); }
+.btn-nav { background: var(--ink); color: white; border: none; padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+.btn-nav:hover { opacity: .8; }
+
+/* PAGE */
+.page { max-width: 660px; margin: 0 auto; padding: 48px 20px 80px; }
+
+/* HERO */
+.hero { text-align: center; margin-bottom: 40px; }
+.hero h1 { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 700; line-height: 1.15; letter-spacing: -.8px; margin-bottom: 12px; }
+.hero h1 em { font-style: italic; color: var(--crisp); }
+.hero p { color: var(--mid); font-size: 15px; max-width: 400px; margin: 0 auto 20px; line-height: 1.65; }
+.pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.pill { background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 4px 12px; font-size: 12px; color: var(--mid); }
+
+/* CARD */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.card-head { font-size: 13px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+.step-circle { width: 20px; height: 20px; background: var(--ink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* API KEY */
+.api-row { display: flex; gap: 8px; }
+.api-input { flex: 1; padding: 9px 12px; border: 1px solid var(--border2); border-radius: 7px; font-family: monospace; font-size: 13px; color: var(--ink); background: var(--bg); outline: none; transition: border .15s; }
+.api-input:focus { border-color: var(--ink); }
+.api-input::placeholder { color: var(--light); }
+.btn-save { padding: 9px 16px; background: var(--white); border: 1px solid var(--border2); border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; transition: all .15s; }
+.btn-save:hover { border-color: var(--ink); }
+.btn-save.saved { border-color: var(--pro); color: var(--pro); }
+.api-hint { margin-top: 8px; font-size: 12px; color: var(--light); }
+.api-hint a { color: var(--mid); }
+
+/* MODEL SELECT */
+.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.model-opt { border: 2px solid var(--border); border-radius: 8px; padding: 14px; cursor: pointer; transition: all .15s; background: var(--bg); position: relative; }
+.model-opt:hover { border-color: var(--border2); background: var(--white); }
+.model-opt.sel-crisp { border-color: var(--crisp); background: var(--crisp-bg); }
+.model-opt.sel-pro { border-color: var(--pro); background: var(--pro-bg); }
+.mo-dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 8px; }
+.mo-dot.c { background: var(--crisp); }
+.mo-dot.p { background: var(--pro); }
+.mo-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.mo-desc { font-size: 12px; color: var(--mid); line-height: 1.4; margin-bottom: 6px; }
+.mo-time { font-size: 11px; color: var(--light); }
+.mo-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.mo-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: white; border: 1px solid var(--border); color: var(--mid); }
+.mo-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 10px; color: white; }
+.sel-crisp .mo-check { display: flex; background: var(--crisp); }
+.sel-pro .mo-check { display: flex; background: var(--pro); }
+
+/* UPLOAD */
+.upload-zone { border: 2px dashed var(--border2); border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all .15s; }
+.upload-zone:hover, .upload-zone.over { border-color: var(--ink); background: white; }
+.upload-icon { font-size: 28px; margin-bottom: 10px; }
+.upload-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.upload-sub { font-size: 12px; color: var(--light); }
+#fileInput { display: none; }
+
+.file-row { display: none; align-items: center; gap: 12px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+.file-row.show { display: flex; }
+.file-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 12px; color: var(--light); }
+.file-change { font-size: 12px; color: var(--mid); cursor: pointer; text-decoration: underline; flex-shrink: 0; }
+.file-change:hover { color: var(--ink); }
+
+.error-box { display: none; padding: 11px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 7px; font-size: 13px; color: var(--red); margin-top: 12px; }
+.error-box.show { display: block; }
+
+.btn-enhance { width: 100%; padding: 13px; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-enhance.c { background: var(--crisp); color: white; }
+.btn-enhance.c:hover:not(:disabled) { background: #d97706; }
+.btn-enhance.p { background: var(--pro); color: white; }
+.btn-enhance.p:hover:not(:disabled) { background: #059669; }
+.btn-enhance:disabled { opacity: .4; cursor: not-allowed; }
+
+/* PROGRESS */
+.prog-card { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.prog-card.show { display: block; }
+.prog-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.prog-label { font-size: 13px; font-weight: 500; }
+.prog-pct { font-size: 13px; font-weight: 700; }
+.prog-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.prog-fill { height: 100%; border-radius: 4px; transition: width .5s ease; width: 0%; }
+.fill-c { background: var(--crisp); }
+.fill-p { background: var(--pro); }
+.prog-steps { display: flex; justify-content: space-between; }
+.ps { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; }
+.ps::after { content: ''; position: absolute; top: 7px; left: 50%; right: -50%; height: 1px; background: var(--border); }
+.ps:last-child::after { display: none; }
+.ps-dot { width: 14px; height: 14px; border-radius: 50%; background: white; border: 2px solid var(--border2); position: relative; z-index: 1; transition: all .3s; }
+.ps.done .ps-dot { background: var(--pro); border-color: var(--pro); }
+.ps.act-c .ps-dot { background: var(--crisp); border-color: var(--crisp); }
+.ps.act-p .ps-dot { background: var(--pro); border-color: var(--pro); animation: glow 1.5s ease infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.4); } 50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
+.ps-lbl { font-size: 10px; color: var(--light); font-weight: 500; }
+.ps.done .ps-lbl, .ps.act-c .ps-lbl, .ps.act-p .ps-lbl { color: var(--mid); }
+.prog-msg { margin-top: 16px; padding: 10px 14px; background: var(--bg); border-radius: 6px; font-size: 12px; color: var(--mid); text-align: center; }
+.pro-notice { display: none; padding: 12px 14px; background: var(--pro-bg); border: 1px solid #a7f3d0; border-radius: 7px; margin-top: 12px; }
+.pro-notice.show { display: block; }
+.pro-notice strong { font-size: 13px; color: var(--pro); display: block; margin-bottom: 2px; }
+.pro-notice span { font-size: 12px; color: #6b7280; }
+
+/* RESULT */
+.result-card { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.result-card.show { display: block; }
+.result-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.result-title { font-size: 15px; font-weight: 600; }
+.res-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; }
+.res-badge.c { background: var(--crisp-bg); color: var(--crisp); }
+.res-badge.p { background: var(--pro-bg); color: var(--pro); }
+
+/* SLIDER */
+.sl-wrap { border-radius: 8px; overflow: hidden; position: relative; cursor: ew-resize; user-select: none; background: #f0f0f0; border: 1px solid var(--border); }
+.sl-wrap img { display: block; width: 100%; max-height: 420px; object-fit: contain; }
+.sl-after { position: absolute; top: 0; left: 0; clip-path: inset(0 50% 0 0); }
+.sl-line { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: white; z-index: 10; pointer-events: none; }
+.sl-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 8px rgba(0,0,0,.15); font-size: 13px; pointer-events: none; }
+.sl-lbl { position: absolute; bottom: 10px; font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; background: rgba(0,0,0,.5); color: white; padding: 3px 8px; border-radius: 4px; z-index: 12; }
+.sl-lbl.b { left: 10px; } .sl-lbl.a { right: 10px; }
+.sl-hint { text-align: center; font-size: 11px; color: var(--light); margin-top: 8px; }
+.dl-row { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.dl-info strong { display: block; font-size: 13px; margin-bottom: 2px; }
+.dl-info span { font-size: 12px; color: var(--mid); }
+.btn-dl { padding: 9px 18px; background: var(--ink); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+.btn-dl:hover { opacity: .8; }
+.btn-another { width: 100%; margin-top: 10px; padding: 9px; background: transparent; color: var(--mid); border: 1px solid var(--border2); border-radius: 7px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.btn-another:hover { color: var(--ink); border-color: var(--ink); }
+
+/* PRICING */
+.pricing-wrap { margin-top: 60px; }
+.sec-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--light); margin-bottom: 4px; }
+.sec-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; letter-spacing: -.4px; margin-bottom: 6px; }
+.sec-sub { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+.ptabs { display: flex; gap: 0; border: 1px solid var(--border2); border-radius: 8px; overflow: hidden; width: fit-content; margin-bottom: 20px; }
+.ptab { padding: 8px 20px; background: transparent; border: none; font-size: 13px; font-weight: 500; color: var(--mid); cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.ptab.ac { background: var(--crisp-bg); color: var(--crisp); font-weight: 600; }
+.ptab.ap { background: var(--pro-bg); color: var(--pro); font-weight: 600; }
+.pgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.pcrd { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: all .15s; position: relative; }
+.pcrd:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.05); }
+.pcrd.pop-c { border-color: var(--crisp); }
+.pcrd.pop-p { border-color: var(--pro); }
+.pop-lbl { position: absolute; top: -1px; right: 14px; padding: 2px 8px; border-radius: 0 0 6px 6px; font-size: 10px; font-weight: 600; }
+.pop-lbl.c { background: var(--crisp); color: white; }
+.pop-lbl.p { background: var(--pro); color: white; }
+.pk-name { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--light); margin-bottom: 10px; }
+.pk-inr { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.pk-usd { font-size: 11px; color: var(--light); margin-bottom: 12px; margin-top: 2px; }
+.pk-credits { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.pk-per { font-size: 11px; color: var(--light); margin-bottom: 12px; }
+.pk-div { height: 1px; background: var(--border); margin-bottom: 10px; }
+.pk-feat { font-size: 12px; color: var(--mid); margin-bottom: 5px; display: flex; gap: 6px; }
+.pk-feat::before { content: '✓'; color: var(--pro); font-size: 11px; flex-shrink: 0; }
+.btn-pk { width: 100%; margin-top: 14px; padding: 9px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
+.btn-pk.c { background: var(--crisp); color: white; }
+.btn-pk.c:hover { background: #d97706; }
+.btn-pk.p { background: var(--pro); color: white; }
+.btn-pk.p:hover { background: #059669; }
+.btn-pk.o { background: var(--bg); color: var(--ink); border: 1px solid var(--border2); }
+.btn-pk.o:hover { border-color: var(--ink); }
+.never { text-align: center; margin-top: 16px; font-size: 12px; color: var(--light); }
+
+/* VS TABLE */
+.vs-wrap { margin-top: 40px; }
+.vs-tbl { width: 100%; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 16px; }
+.vs-row { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 11px 16px; border-bottom: 1px solid var(--border); align-items: center; font-size: 13px; }
+.vs-row:last-child { border-bottom: none; }
+.vs-row.hdr { background: var(--bg); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--light); padding: 10px 16px; }
+.vs-row:nth-child(even):not(.hdr) { background: var(--bg); }
+.vs-feat { color: var(--mid); }
+.vs-them { text-align: center; color: var(--light); }
+.vs-us { text-align: center; font-weight: 600; }
+.y { color: var(--pro); }
+.n { color: var(--red); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: all .25s; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.15); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* FOOTER */
+footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--border); background: white; display: flex; justify-content: space-between; align-items: center; }
+.foot-logo { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; }
+.foot-note { font-size: 12px; color: var(--light); }
+
+/* SPINNER */
+@keyframes spin { to { transform: rotate(360deg); } }
+.sp { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+
+@media (max-width: 580px) {
+  nav { padding: 0 16px; }
+  .nav-link { display: none; }
+  .page { padding: 28px 16px 60px; }
+  .hero h1 { font-size: 28px; }
+  .model-grid { grid-template-columns: 1fr; }
+  .pgrid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 6px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-box">P</div>
+    PrintSharp.ai
+  </div>
+  <div class="nav-right">
+    <span class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</span>
+    <button class="btn-nav" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Buy Credits</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Make any image<br><em>print-perfect</em></h1>
+    <p>Upload a low-res image. AI enhances it for professional print — wallpapers, posters, canvases, banners.</p>
+    <div class="pills">
+      <span class="pill">UPI accepted</span>
+      <span class="pill">Credits never expire</span>
+      <span class="pill">Built for print</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="card-head"><div class="step-circle">1</div> Your Replicate API key</div>
+    <div class="api-row">
+      <input class="api-input" type="password" id="apiKey" placeholder="r8_xxxxxxxxxxxxxxxx">
+      <button class="btn-save" id="saveBtn" onclick="saveKey()">Save</button>
+    </div>
+    <div class="api-hint">Get it free at <a href="https://replicate.com" target="_blank">replicate.com</a> → Account → API Tokens. Saved in your browser only.</div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <div class="card-head"><div class="step-circle">2</div> Choose enhancement type</div>
+    <div class="model-grid">
+      <div class="model-opt sel-crisp" id="optC" onclick="pickModel('crisp')">
+        <div class="mo-check">✓</div>
+        <div class="mo-dot c"></div>
+        <div class="mo-name">Quick Crisp</div>
+        <div class="mo-desc">Fast, clean enhancement for everyday print.</div>
+        <div class="mo-time">⚡ ~5 seconds</div>
+        <div class="mo-tags">
+          <span class="mo-tag">Posters</span><span class="mo-tag">Banners</span><span class="mo-tag">A2/A3</span><span class="mo-tag">Product photos</span>
+        </div>
+      </div>
+      <div class="model-opt" id="optP" onclick="pickModel('pro')">
+        <div class="mo-check">✓</div>
+        <div class="mo-dot p"></div>
+        <div class="mo-name">Wallpaper Pro</div>
+        <div class="mo-desc">Deep detail for large format and murals.</div>
+        <div class="mo-time">🕐 8–12 minutes</div>
+        <div class="mo-tags">
+          <span class="mo-tag">Full wall</span><span class="mo-tag">Chinoiserie</span><span class="mo-tag">Botanical</span><span class="mo-tag">Wildlife</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card">
+    <div class="card-head"><div class="step-circle">3</div> Upload your image</div>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">🖼</div>
+      <div class="upload-title">Drop image here or click to browse</div>
+      <div class="upload-sub">JPG · PNG · WebP — up to 10MB</div>
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+    </div>
+
+    <div class="file-row" id="fileRow">
+      <img class="file-thumb" id="fileThumb" src="" alt="">
+      <div class="file-info">
+        <div class="file-name" id="fileName">—</div>
+        <div class="file-size" id="fileSize">—</div>
+      </div>
+      <span class="file-change" onclick="document.getElementById('fileInput').click()">Change</span>
+    </div>
+
+    <div class="error-box" id="errBox"></div>
+
+    <button class="btn-enhance c" id="enhBtn" onclick="enhance()" disabled>Enhance Image</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-card" id="progCard">
+    <div class="prog-top">
+      <div class="prog-label" id="progLabel">Processing...</div>
+      <div class="prog-pct" id="progPct">0%</div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill fill-c" id="progFill"></div></div>
+    <div class="prog-steps">
+      <div class="ps" id="s1"><div class="ps-dot"></div><div class="ps-lbl">Upload</div></div>
+      <div class="ps" id="s2"><div class="ps-dot"></div><div class="ps-lbl">Queue</div></div>
+      <div class="ps" id="s3"><div class="ps-dot"></div><div class="ps-lbl">Enhance</div></div>
+      <div class="ps" id="s4"><div class="ps-dot"></div><div class="ps-lbl">Done</div></div>
+    </div>
+    <div class="prog-msg" id="progMsg">Starting...</div>
+    <div class="pro-notice" id="proNotice">
+      <strong>Wallpaper Pro is working on your image</strong>
+      <span>Analysing every pixel for maximum detail. Takes 8–12 minutes. Please keep this tab open.</span>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resCard">
+    <div class="result-top">
+      <div class="result-title">Your enhanced image</div>
+      <div class="res-badge c" id="resBadge">Quick Crisp</div>
+    </div>
+    <div class="sl-wrap" id="slWrap">
+      <img id="beforeImg" src="" alt="Original">
+      <img id="afterImg" src="" alt="Enhanced" class="sl-after">
+      <div class="sl-line" id="slLine"></div>
+      <div class="sl-handle" id="slHandle">⟺</div>
+      <div class="sl-lbl b">Before</div>
+      <div class="sl-lbl a">After</div>
+    </div>
+    <div class="sl-hint">← Drag slider to compare →</div>
+    <div class="dl-row">
+      <div class="dl-info">
+        <strong>Print-ready file ready</strong>
+        <span id="dlMeta">Enhanced · High resolution</span>
+      </div>
+      <button class="btn-dl" onclick="dlImg()">↓ Download</button>
+    </div>
+    <button class="btn-another" onclick="resetAll()">Enhance another image</button>
+  </div>
+
+  <!-- PRICING -->
+  <div class="pricing-wrap" id="pricing">
+    <div class="sec-label">Pricing</div>
+    <div class="sec-title">Buy once, use forever</div>
+    <div class="sec-sub">No subscription. Pay via UPI, card, or net banking. Credits never expire.</div>
+
+    <div class="ptabs">
+      <button class="ptab ac" id="tC" onclick="switchTab('c')">⚡ Quick Crisp</button>
+      <button class="ptab" id="tP" onclick="switchTab('p')">🖼 Wallpaper Pro</button>
+    </div>
+
+    <div id="panC">
+      <div class="pgrid">
+        <div class="pcrd">
+          <div class="pk-name">Starter</div>
+          <div class="pk-inr">₹199</div>
+          <div class="pk-usd">~$2.40 USD</div>
+          <div class="pk-credits">20 Credits</div>
+          <div class="pk-per">₹9.95 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">All image formats</div>
+          <div class="pk-feat">High-res download</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk o">Get Started</button>
+        </div>
+        <div class="pcrd pop-c">
+          <div class="pop-lbl c">Popular</div>
+          <div class="pk-name">Professional</div>
+          <div class="pk-inr">₹499</div>
+          <div class="pk-usd">~$5.99 USD</div>
+          <div class="pk-credits">60 Credits</div>
+          <div class="pk-per">₹8.32 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">All image formats</div>
+          <div class="pk-feat">High-res download</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk c">Buy Now</button>
+        </div>
+        <div class="pcrd">
+          <div class="pk-name">Studio</div>
+          <div class="pk-inr">₹999</div>
+          <div class="pk-usd">~$11.99 USD</div>
+          <div class="pk-credits">150 Credits</div>
+          <div class="pk-per">₹6.66 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">All image formats</div>
+          <div class="pk-feat">High-res download</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk o">Buy Studio</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panP" style="display:none">
+      <div class="pgrid">
+        <div class="pcrd">
+          <div class="pk-name">Starter</div>
+          <div class="pk-inr">₹599</div>
+          <div class="pk-usd">~$7.20 USD</div>
+          <div class="pk-credits">5 Credits</div>
+          <div class="pk-per">₹119.80 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">Maximum detail</div>
+          <div class="pk-feat">Wall mural quality</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk o">Get Started</button>
+        </div>
+        <div class="pcrd pop-p">
+          <div class="pop-lbl p">Popular</div>
+          <div class="pk-name">Professional</div>
+          <div class="pk-inr">₹1,499</div>
+          <div class="pk-usd">~$18.00 USD</div>
+          <div class="pk-credits">15 Credits</div>
+          <div class="pk-per">₹99.93 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">Maximum detail</div>
+          <div class="pk-feat">Wall mural quality</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk p">Buy Now</button>
+        </div>
+        <div class="pcrd">
+          <div class="pk-name">Studio</div>
+          <div class="pk-inr">₹3,499</div>
+          <div class="pk-usd">~$42.00 USD</div>
+          <div class="pk-credits">40 Credits</div>
+          <div class="pk-per">₹87.48 per image</div>
+          <div class="pk-div"></div>
+          <div class="pk-feat">Maximum detail</div>
+          <div class="pk-feat">Wall mural quality</div>
+          <div class="pk-feat">Never expires</div>
+          <button class="btn-pk o">Buy Studio</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="never">✦ One-time purchase · Credits never expire · No subscription</div>
+
+    <!-- VS TABLE -->
+    <div class="vs-wrap">
+      <div class="sec-label">Why PrintSharp.ai</div>
+      <div class="vs-tbl">
+        <div class="vs-row hdr">
+          <div>Feature</div><div style="text-align:center">Let's Enhance</div><div style="text-align:center">PrintSharp.ai</div>
+        </div>
+        <div class="vs-row"><div class="vs-feat">UPI / Indian payments</div><div class="vs-them n">✕</div><div class="vs-us y">✓</div></div>
+        <div class="vs-row"><div class="vs-feat">Credits never expire</div><div class="vs-them n">✕ Monthly</div><div class="vs-us y">✓ Forever</div></div>
+        <div class="vs-row"><div class="vs-feat">Pricing in ₹ INR</div><div class="vs-them n">USD only</div><div class="vs-us y">INR + USD</div></div>
+        <div class="vs-row"><div class="vs-feat">Built for print</div><div class="vs-them">Generic</div><div class="vs-us y">Print-first</div></div>
+        <div class="vs-row"><div class="vs-feat">Wallpaper Pro model</div><div class="vs-them n">✕</div><div class="vs-us y">✓</div></div>
+        <div class="vs-row"><div class="vs-feat">100 images</div><div class="vs-them">₹1,100/month</div><div class="vs-us">₹999 forever</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-logo">PrintSharp.ai</div>
+  <div class="foot-note">Built for Indian print professionals · Pay via UPI · No subscription</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let apiKey = localStorage.getItem('ps_k') || '';
+let model = 'crisp';
+let imgData = null;
+let outUrl = null;
+let dragging = false;
+
+if (apiKey) {
+  document.getElementById('apiKey').value = apiKey;
+  const b = document.getElementById('saveBtn');
+  b.textContent = '✓ Saved';
+  b.classList.add('saved');
+}
+
+// Drag drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f?.type.startsWith('image/')) doFile(f); });
+
+function saveKey() {
+  const k = document.getElementById('apiKey').value.trim();
+  if (!k) { showToast('Please enter your API key'); return; }
+  apiKey = k;
+  localStorage.setItem('ps_k', k);
+  const b = document.getElementById('saveBtn');
+  b.textContent = '✓ Saved';
+  b.classList.add('saved');
+  showToast('API key saved');
+}
+
+function pickModel(m) {
+  model = m;
+  document.getElementById('optC').className = 'model-opt' + (m === 'crisp' ? ' sel-crisp' : '');
+  document.getElementById('optP').className = 'model-opt' + (m === 'pro' ? ' sel-pro' : '');
+  const btn = document.getElementById('enhBtn');
+  btn.className = 'btn-enhance ' + (m === 'crisp' ? 'c' : 'p');
+  btn.textContent = m === 'crisp' ? '⚡ Enhance — Quick Crisp' : '🖼 Enhance — Wallpaper Pro';
+}
+
+function handleFile(e) { const f = e.target.files[0]; if (f) doFile(f); }
+
+function doFile(f) {
+  if (f.size > 10 * 1024 * 1024) { showToast('Max 10MB'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    imgData = e.target.result;
+    document.getElementById('fileThumb').src = imgData;
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = (f.size / 1024).toFixed(0) + ' KB';
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('fileRow').classList.add('show');
+    document.getElementById('enhBtn').disabled = false;
+    hideErr();
+  };
+  r.readAsDataURL(f);
+}
+
+async function enhance() {
+  if (!imgData) { showToast('Upload an image first'); return; }
+  if (!apiKey) { showToast('Save your API key first'); return; }
+  hideErr();
+  document.getElementById('resCard').classList.remove('show');
+
+  const btn = document.getElementById('enhBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sp"></span> Processing...';
+
+  showProg();
+  const isPro = model === 'pro';
+  document.getElementById('progFill').className = 'prog-fill ' + (isPro ? 'fill-p' : 'fill-c');
+  if (isPro) document.getElementById('proNotice').classList.add('show');
+
+  setStep(1); setProg(10, 'Uploading...');
+
+  try {
+    setStep(2); setProg(25, 'Sending to AI...');
+
+    // Call our own API route — solves CORS
+    const scale = isPro ? 8 : 4;
+
+    const res = await fetch('/api/enhance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: imgData,
+        scale: scale,
+        apiKey: apiKey
+      })
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || `Error ${res.status}`); }
+
+    setStep(3); setProg(60, isPro ? 'Deep enhancement in progress...' : 'Enhancing your image...');
+
+    // Animate progress while waiting for backend
+    const msgs = isPro
+      ? ['Analysing fine details...', 'Enhancing distant objects...', 'Sharpening textures...', 'Finalising output...']
+      : ['Upscaling resolution...', 'Sharpening edges...', 'Almost done...'];
+
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx++;
+      setProg(Math.min(60 + msgIdx * 3, 92), msgs[msgIdx % msgs.length]);
+    }, 3000);
+
+    const data = await res.json();
+    clearInterval(msgInterval);
+
+    if (!data.output) throw new Error('Enhancement failed. Please try again.');
+
+    setStep(4); setProg(100, 'Complete!');
+    await sleep(400);
+
+    outUrl = Array.isArray(data.output) ? data.output[0] : data.output;
+    showResult(outUrl);
+
+  } catch (err) {
+    hideProg();
+    showErr(err.message);
+    btn.disabled = false;
+    btn.textContent = model === 'crisp' ? '⚡ Enhance — Quick Crisp' : '🖼 Enhance — Wallpaper Pro';
+  }
+}
+
+function showResult(url) {
+  hideProg();
+  document.getElementById('beforeImg').src = imgData;
+  document.getElementById('afterImg').src = url;
+  const isPro = model === 'pro';
+  document.getElementById('resBadge').textContent = isPro ? 'Wallpaper Pro' : 'Quick Crisp';
+  document.getElementById('resBadge').className = 'res-badge ' + (isPro ? 'p' : 'c');
+  document.getElementById('dlMeta').textContent = (isPro ? 'Wallpaper Pro' : 'Quick Crisp') + ' · Print-ready';
+  document.getElementById('resCard').classList.add('show');
+  document.getElementById('enhBtn').disabled = false;
+  document.getElementById('enhBtn').textContent = model === 'crisp' ? '⚡ Enhance — Quick Crisp' : '🖼 Enhance — Wallpaper Pro';
+  setTimeout(() => document.getElementById('resCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  showToast('Done! Drag the slider to compare.');
+}
+
+function dlImg() {
+  if (!outUrl) return;
+  const a = document.createElement('a');
+  a.href = outUrl; a.download = 'printsharp-enhanced.png'; a.target = '_blank'; a.click();
+}
+
+function resetAll() {
+  imgData = null; outUrl = null;
+  document.getElementById('fileRow').classList.remove('show');
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('enhBtn').disabled = true;
+  document.getElementById('resCard').classList.remove('show');
+  hideErr();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Slider
+const sl = document.getElementById('slWrap');
+function moveSl(x) {
+  const r = sl.getBoundingClientRect();
+  let p = Math.max(2, Math.min(98, (x - r.left) / r.width * 100));
+  document.getElementById('afterImg').style.clipPath = `inset(0 ${100-p}% 0 0)`;
+  document.getElementById('slLine').style.left = p + '%';
+  document.getElementById('slHandle').style.left = p + '%';
+}
+sl.addEventListener('mousedown', e => { dragging = true; moveSl(e.clientX); });
+document.addEventListener('mousemove', e => { if (dragging) moveSl(e.clientX); });
+document.addEventListener('mouseup', () => dragging = false);
+sl.addEventListener('touchstart', e => { dragging = true; moveSl(e.touches[0].clientX); });
+document.addEventListener('touchmove', e => { if (dragging) moveSl(e.touches[0].clientX); });
+document.addEventListener('touchend', () => dragging = false);
+
+// Progress
+function showProg() { document.getElementById('progCard').classList.add('show'); ['s1','s2','s3','s4'].forEach(id => document.getElementById(id).className = 'ps'); }
+function hideProg() { document.getElementById('progCard').classList.remove('show'); document.getElementById('proNotice').classList.remove('show'); }
+function setProg(pct, msg) {
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = Math.round(pct) + '%';
+  document.getElementById('progMsg').textContent = msg;
+}
+function setStep(n) {
+  const isPro = model === 'pro';
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('s' + i);
+    el.className = i < n ? 'ps done' : i === n ? ('ps ' + (isPro ? 'act-p' : 'act-c')) : 'ps';
+  }
+}
+
+// Tabs
+function switchTab(t) {
+  const isP = t === 'p';
+  document.getElementById('tC').className = 'ptab' + (!isP ? ' ac' : '');
+  document.getElementById('tP').className = 'ptab' + (isP ? ' ap' : '');
+  document.getElementById('panC').style.display = isP ? 'none' : 'block';
+  document.getElementById('panP').style.display = isP ? 'block' : 'none';
+}
+
+function showErr(msg) { const b = document.getElementById('errBox'); b.textContent = '⚠ ' + msg; b.classList.add('show'); }
+function hideErr() { document.getElementById('errBox').classList.remove('show'); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
