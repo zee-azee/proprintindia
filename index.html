@@ -562,55 +562,43 @@ async function enhance() {
   try {
     setStep(2); setProg(25, 'Sending to AI...');
 
-    // cjwbw/real-esrgan — one model, two settings
+    // Call our own API route — solves CORS
     const scale = isPro ? 8 : 4;
 
-    const res = await fetch('fetch('/api/enhance', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    image: imgData,
-    scale: scale,
-    apiKey: apiKey
-  })
-})', {
+    const res = await fetch('/api/enhance', {
       method: 'POST',
-      headers: { 'Authorization': `Token ${apiKey}`, 'Content-Type': 'application/json', 'Prefer': 'wait' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        version: 'd0ee3d708c9b911f122a4ad90046c5d26a0293b99476d697f6bb7f2e251ce2d4',
-        input: {
-          image: imgData,
-          scale: scale,
-          face_enhance: false
-        }
+        image: imgData,
+        scale: scale,
+        apiKey: apiKey
       })
     });
 
-    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || `Error ${res.status}`); }
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || `Error ${res.status}`); }
 
-    let pred = await res.json();
-    setStep(3); setProg(50, isPro ? 'Deep enhancement in progress...' : 'Enhancing your image...');
+    setStep(3); setProg(60, isPro ? 'Deep enhancement in progress...' : 'Enhancing your image...');
 
+    // Animate progress while waiting for backend
     const msgs = isPro
       ? ['Analysing fine details...', 'Enhancing distant objects...', 'Sharpening textures...', 'Finalising output...']
-      : ['Upscaling...', 'Sharpening edges...', 'Almost done...'];
+      : ['Upscaling resolution...', 'Sharpening edges...', 'Almost done...'];
 
-    let i = 0;
-    while (pred.status !== 'succeeded' && pred.status !== 'failed' && i < 120) {
-      await sleep(isPro ? 5000 : 1500);
-      i++;
-      setProg(50 + Math.min(i / 120 * 44, 43), msgs[i % msgs.length]);
-      const p = await fetch(`https://api.replicate.com/v1/predictions/${pred.id}`, { headers: { 'Authorization': `Token ${apiKey}` } });
-      pred = await p.json();
-    }
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx++;
+      setProg(Math.min(60 + msgIdx * 3, 92), msgs[msgIdx % msgs.length]);
+    }, 3000);
 
-    if (pred.status === 'failed') throw new Error(pred.error || 'Enhancement failed. Try again.');
-    if (pred.status !== 'succeeded' || !pred.output) throw new Error('Timed out. Please try again.');
+    const data = await res.json();
+    clearInterval(msgInterval);
+
+    if (!data.output) throw new Error('Enhancement failed. Please try again.');
 
     setStep(4); setProg(100, 'Complete!');
     await sleep(400);
 
-    outUrl = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+    outUrl = Array.isArray(data.output) ? data.output[0] : data.output;
     showResult(outUrl);
 
   } catch (err) {
