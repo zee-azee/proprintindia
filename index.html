@@ -565,7 +565,15 @@ async function enhance() {
     // cjwbw/real-esrgan — one model, two settings
     const scale = isPro ? 8 : 4;
 
-    const res = await fetch('https://api.replicate.com/v1/predictions', {
+    const res = await fetch('fetch('/api/enhance', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    image: imgData,
+    scale: scale,
+    apiKey: apiKey
+  })
+})', {
       method: 'POST',
       headers: { 'Authorization': `Token ${apiKey}`, 'Content-Type': 'application/json', 'Prefer': 'wait' },
       body: JSON.stringify({
