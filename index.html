@@ -238,7 +238,9 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   </div>
   <div class="nav-right">
     <span class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</span>
- <button class="btn-nav" onclick="payNow(199 499 999)">Buy Credits</button>
+ <button class="btn-nav" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">
+  Buy Credits
+</button>
   </div>
 </nav>
 
@@ -460,7 +462,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
     <div class="never">✦ One-time purchase · Credits never expire · No subscription</div>
 
     <!-- VS TABLE -->
-    <div class="vs-wrap">
+    <div class="vs-wrap" id="pricing">
       <div class="sec-label">Why proprintindia.com</div>
       <div class="vs-tbl">
         <div class="vs-row hdr">
