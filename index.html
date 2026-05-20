@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proprintindia.com — Print-Ready Image Enhancement</title>
@@ -238,7 +238,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   </div>
   <div class="nav-right">
     <span class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</span>
-    <button class="btn-nav" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Buy Credits</button>
+ <button class="btn-nav" onclick="payNow()">Buy Credits</button>
   </div>
 </nav>
 
@@ -686,6 +686,36 @@ function showErr(msg) { const b = document.getElementById('errBox'); b.textConte
 function hideErr() { document.getElementById('errBox').classList.remove('show'); }
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+  <script>
+async function payNow() {
+  const response = await fetch("/api/create-order", {
+    method: "POST",
+  });
+
+  const order = await response.json();
+
+  const options = {
+    key: "rzp_test_SrVWcyAQmrH9E6",
+    amount: order.amount,
+    currency: order.currency,
+    name: "ProPrintIndia",
+    description: "Payment",
+    order_id: order.id,
+
+    handler: function (response) {
+      alert("Payment Successful!");
+      console.log(response);
+    },
+
+    theme: {
+      color: "#3399cc",
+    },
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
 </script>
 </body>
 </html>
