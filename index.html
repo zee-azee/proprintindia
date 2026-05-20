@@ -689,14 +689,15 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
   <script>
 async function payNow(amount) {
-
-  const response = await fetch("/api/create-order", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ amount })
-  });
+const response = await fetch("/api/create-order", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    amount: amount
+  })
+});
 
   const order = await response.json();
 
@@ -705,12 +706,17 @@ async function payNow(amount) {
     amount: order.amount,
     currency: order.currency,
     name: "ProPrintIndia",
-    description: "Image Enhancement Credits",
+    description: "Payment",
     order_id: order.id,
 
     handler: function (response) {
       alert("Payment Successful!");
-    }
+      console.log(response);
+    },
+
+    theme: {
+      color: "#3399cc",
+    },
   };
 
   const rzp = new Razorpay(options);
