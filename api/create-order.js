@@ -1,23 +1,28 @@
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
 export default async function handler(req, res) {
 
-  const auth = Buffer.from(
-    process.env.RAZORPAY_KEY_ID + ":" + process.env.RAZORPAY_KEY_SECRET
-  ).toString("base64");
+  const { amount } = req.body;
 
-  const response = await fetch("https://api.razorpay.com/v1/orders", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Basic ${auth}`
-    },
-    body: JSON.stringify({
-      amount: 49900,
+  try {
+
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
       currency: "INR",
-      receipt: "receipt#1"
-    })
-  });
+    });
 
-  const data = await response.json();
+    res.status(200).json(order);
 
-  res.status(200).json(data);
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message,
+    });
+
+  }
 }
