@@ -385,7 +385,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
           <div class="pk-feat">All image formats</div>
           <div class="pk-feat">High-res download</div>
           <div class="pk-feat">Never expires</div>
-          <button class="btn-pk o">Get Started</button>
+        <button onclick="payNow(199)">Get Started</button>
         </div>
         <div class="pcrd pop-c">
           <div class="pop-lbl c">Popular</div>
@@ -689,34 +689,28 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
   <script>
 async function payNow(amount) {
-const response = await fetch("/api/create-order", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    amount: amount
-  })
-});
+
+  const response = await fetch("/api/create-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ amount })
+  });
 
   const order = await response.json();
 
   const options = {
-    key: "rzp_live_SrZ4egBZn4DXlI",
+    key: "YOUR_RAZORPAY_KEY_ID",
     amount: order.amount,
     currency: order.currency,
     name: "ProPrintIndia",
-    description: "Payment",
+    description: "Image Enhancement Credits",
     order_id: order.id,
 
     handler: function (response) {
       alert("Payment Successful!");
-      console.log(response);
-    },
-
-    theme: {
-      color: "#3399cc",
-    },
+    }
   };
 
   const rzp = new Razorpay(options);
