@@ -398,7 +398,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
           <div class="pk-feat">All image formats</div>
           <div class="pk-feat">High-res download</div>
           <div class="pk-feat">Never expires</div>
-       <button class="btn-pk o" onclick="payNow()">Buy now</button>
+       <button class="btn-pk o" onclick="payNow(499)">Buy now</button>
         </div>
         <div class="pcrd">
           <div class="pk-name">Studio</div>
@@ -410,7 +410,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
           <div class="pk-feat">All image formats</div>
           <div class="pk-feat">High-res download</div>
           <div class="pk-feat">Never expires</div>
-         <button class="btn-pk o" onclick="payNow()">Buy Studio</button>
+         <button class="btn-pk o" onclick="payNow(999)">Buy Studio</button>
         </div>
       </div>
     </div>
@@ -427,7 +427,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
           <div class="pk-feat">Maximum detail</div>
           <div class="pk-feat">Wall mural quality</div>
           <div class="pk-feat">Never expires</div>
-          <button class="btn-pk o" onclick="payNow()">Get Started</button>
+          <button class="btn-pk o" onclick="payNow(199)">Get Started</button>
         </div>
         <div class="pcrd pop-p">
           <div class="pop-lbl p">Popular</div>
@@ -688,10 +688,16 @@ function showToast(msg) { const t = document.getElementById('toast'); t.textCont
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
   <script>
-async function payNow() {
-  const response = await fetch("/api/create-order", {
-    method: "POST",
-  });
+async function payNow(amount) {
+const response = await fetch("/api/create-order", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    amount: amount
+  })
+});
 
   const order = await response.json();
 
