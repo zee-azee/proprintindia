@@ -10,6 +10,152 @@
 :root {
   --bg: #f9f9f9;
   --white: #ffffff;
+}/* PREMIUM HERO */
+
+.hero {
+  text-align: center;
+  padding: 40px 20px 70px;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245,158,11,0.15), transparent 70%);
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 28px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+}
+
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -3px;
+  margin-bottom: 20px;
+  color: #111;
+}
+
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg,#f59e0b,#ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+  max-width: 640px;
+  margin: auto;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 34px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.hero-btn {
+  padding: 14px 26px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.hero-btn.primary {
+  background: linear-gradient(135deg,#111,#333);
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.hero-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 35px rgba(0,0,0,0.18);
+}
+
+.hero-btn.secondary {
+  background: white;
+  border: 1px solid #ddd;
+  color: #111;
+}
+
+.hero-btn.secondary:hover {
+  background: #111;
+  color: white;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat strong {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
+}
+
+.stat span {
+  font-size: 13px;
+  color: #777;
+  margin-top: 4px;
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+  .hero h1 {
+    font-size: 42px;
+    line-height: 1.1;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .hero-stats {
+    gap: 24px;
+  }
+
+}
+  --bg: #f9f9f9;
+  --white: #ffffff;
   --ink: #111;
   --mid: #666;
   --light: #aaa;
@@ -320,14 +466,56 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
 
   <!-- HERO -->
   <div class="hero">
-    <h1>Make any image<br><em>print-perfect</em></h1>
-    <p>Upload a low-res image. AI enhances it for professional print — wallpapers, posters, canvases, banners.</p>
-    <div class="pills">
-      <span class="pill">UPI accepted</span>
-      <span class="pill">Credits never expire</span>
-      <span class="pill">Built for print</span>
-    </div>
+
+  <div class="hero-badge">
+    ✨ AI Powered Print Enhancement
   </div>
+
+  <h1>
+    Make any image<br>
+    <em>print-perfect</em>
+  </h1>
+
+  <p>
+    Upload low-quality images and transform them into
+    ultra-sharp, print-ready artwork for posters,
+    wallpapers, canvases, and banners.
+  </p>
+
+  <div class="hero-buttons">
+
+    <button class="hero-btn primary"
+      onclick="document.getElementById('fileInput').click()">
+      Upload Image
+    </button>
+
+    <button class="hero-btn secondary"
+      onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">
+      View Pricing
+    </button>
+
+  </div>
+
+  <div class="hero-stats">
+
+    <div class="stat">
+      <strong>4×–8×</strong>
+      <span>AI Upscaling</span>
+    </div>
+
+    <div class="stat">
+      <strong>10K+</strong>
+      <span>Images Enhanced</span>
+    </div>
+
+    <div class="stat">
+      <strong>UPI</strong>
+      <span>Payments Supported</span>
+    </div>
+
+  </div>
+
+</div>
 
   <!-- STEP 1 -->
   <div class="card">
