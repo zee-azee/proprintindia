@@ -21,7 +21,16 @@
   --pro-bg: #ecfdf5;
   --red: #ef4444;
 }
-body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; }
+body {
+  background:
+    radial-gradient(circle at top left, #fff7ed 0%, transparent 25%),
+    radial-gradient(circle at top right, #ecfeff 0%, transparent 25%),
+    #f8fafc;
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
 
 /* NAV */
 nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
