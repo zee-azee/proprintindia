@@ -14,7 +14,7 @@
 
 .hero {
   text-align: center;
-  padding: 40px 20px 70px;
+ padding: 40px 20px 70px;
   position: relative;
 }
 
@@ -465,36 +465,77 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
 <div class="page">
 
   <!-- HERO -->
-  <div class="hero">
+<!-- MODERN HERO -->
+<section class="hero-modern">
 
-  <div class="hero-badge">
-    ✨ AI Powered Print Enhancement
+  <!-- LEFT SIDE -->
+  <div class="hero-left">
+
+    <div class="hero-chip">
+      ⚡ AI Powered Image Enhancement
+    </div>
+
+    <h1>
+      Turn Low Quality Images Into
+      <span>Print-Ready Artwork</span>
+    </h1>
+
+    <p>
+      Upscale posters, banners, wallpapers, and product photos
+      using advanced AI enhancement built for professional printing.
+    </p>
+
+    <div class="hero-actions">
+
+      <button class="btn-primary"
+        onclick="document.getElementById('fileInput').click()">
+        ⬆ Upload Image
+      </button>
+
+      <button class="btn-secondary"
+        onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">
+        ⟳ View Pricing
+      </button>
+
+    </div>
+
   </div>
 
-  <h1>
-    Make any image<br>
-    <em>print-perfect</em>
-  </h1>
+  <!-- RIGHT SIDE -->
+  <div class="preview-card">
 
-  <p>
-    Upload low-quality images and transform them into
-    ultra-sharp, print-ready artwork for posters,
-    wallpapers, canvases, and banners.
-  </p>
+    <div class="preview-top">
 
-  <div class="hero-buttons">
+      <div>
+        <h3>Live Preview</h3>
+        <span>Before & After AI Enhancement</span>
+      </div>
 
-    <button class="hero-btn primary"
-      onclick="document.getElementById('fileInput').click()">
-      Upload Image
-    </button>
+      <div class="status-badge">
+        Ready
+      </div>
 
-    <button class="hero-btn secondary"
-      onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">
-      View Pricing
-    </button>
+    </div>
+
+    <div class="preview-images">
+
+      <div class="preview-box">
+        <label>Before</label>
+
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600">
+      </div>
+
+      <div class="preview-box">
+        <label class="after">After AI Upscale</label>
+
+        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600">
+      </div>
+
+    </div>
 
   </div>
+
+</section>
 
   <div class="hero-stats">
 
