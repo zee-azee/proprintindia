@@ -916,7 +916,16 @@ function pickModel(m) {
   btn.textContent = m === 'crisp' ? '⚡ Enhance — Quick Crisp' : '🖼 Enhance — Wallpaper Pro';
 }
 
-function handleFile(e) { const f = e.target.files[0]; if (f) doFile(f); }
+function handleFile(e) {
+  const f = e?.target?.files?.[0];
+
+  if (!f) {
+    showToast('No file selected');
+    return;
+  }
+
+  doFile(f);
+}
 
 function doFile(f) {
   if (f.size > 10 * 1024 * 1024) { showToast('Max 10MB'); return; }
