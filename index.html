@@ -454,7 +454,62 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
     color: #fff;
   
 
+/* NAVBAR */
 
+.header{
+  width:100%;
+  padding:20px 0;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid #eee;
+}
+
+.container{
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+}
+
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.ppi-logo{
+  font-size:28px;
+  font-weight:800;
+  color:#111;
+}
+
+.nav-links{
+  display:flex;
+  gap:30px;
+  align-items:center;
+}
+
+.nav-links a{
+  text-decoration:none;
+  color:#444;
+  font-weight:600;
+  transition:.2s;
+}
+
+.nav-links a:hover{
+  color:#000;
+}
+
+.nav-btn{
+  background:#111;
+  color:white;
+  padding:14px 22px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:700;
+}
 </style>
 </head>
 <body>
@@ -462,7 +517,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
 
   <div class="container navbar">
 
-    <div class=".ppi-logo">
+    <div class="ppi-logo">
       ProPrintIndia
     </div>
 
