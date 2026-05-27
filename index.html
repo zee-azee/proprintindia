@@ -1110,10 +1110,14 @@ const response = await fetch("/api/create-order", {
     description: "Payment",
     order_id: order.id,
 
-    handler: function (response) {
-      alert("Payment Successful!");
-      console.log(response);
-    },
+   handler: function (response) {
+  showToast("Payment successful!");
+  console.log(response);
+
+  setTimeout(() => {
+    window.location.href = "#uploadZone";
+  }, 1200);
+},
 
     theme: {
       color: "#3399cc",
