@@ -554,9 +554,13 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   .nav-link { display: none; }
   .page { padding: 28px 16px 60px; }
   .hero h1 { font-size: 28px; }
-  .model-grid { 
-  grid-template-columns: 1fr 1fr; 
+ .model-grid {
+  display: flex;
   gap: 16px;
+}
+
+.model-opt {
+  flex: 1;
 }
   .pgrid { grid-template-columns: 1fr; }
   footer { flex-direction: column; gap: 6px; text-align: center; }
