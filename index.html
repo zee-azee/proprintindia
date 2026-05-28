@@ -239,20 +239,37 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 .api-hint a {color: rgba(248,250,252,0.72); }
 
 /* MODEL SELECT */
-.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.model-opt { border: 2px solid var(--border); border-radius: 8px; padding: 14px; cursor: pointer; transition: all .15s; background: var(--bg); position: relative; }
-.model-opt:hover { border-color: var(--border2); background: var(--white); }
-.model-opt.sel-crisp { border-color: var(--crisp); background: var(--crisp-bg); }
-.model-opt.sel-pro { border-color: var(--pro); background: var(--pro-bg); }
+.model-opt{
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all .25s ease;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  color: #f8fafc;
+}
+
+.model-opt:hover{
+  border-color: rgba(124,58,237,.6);
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.05);
+}
+
+.model-opt.sel-crisp,
+.model-opt.sel-pro{
+  border-color: #7c3aed;
+  background: rgba(124,58,237,0.12);
+}
 .mo-dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 8px; }
 .mo-dot.c { background: var(--crisp); }
 .mo-dot.p { background: var(--pro); }
-.mo-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.mo-desc { font-size: 12px; color: rgba(248,250,252,0.72); line-height: 1.4; margin-bottom: 6px; }
-.mo-time { font-size: 11px; color: var(--light); }
+.mo-name{ font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;}
+.mo-desc{ font-size: 14px; line-height: 1.6; color: #cbd5e1; margin-bottom: 10px;}
+.mo-time{ font-size: 13px; color: #a5b4fc;}
 .mo-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-.mo-tag  {font-size:10px; padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
-  color: rgba(248,250,252,0.78);backdrop-filter: blur(10px);}
+.mo-tag{  font-size: 12px;  padding: 6px 12px;  border-radius: 999px;  background: rgba(255,255,255,0.06);  border: 1px solid rgba(255,255,255,0.08);
+  color: #e2e8f0;}
 .mo-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 10px; color: white; }
 .sel-crisp .mo-check { display: flex; background: var(--crisp); }
 .sel-pro .mo-check { display: flex; background: var(--pro); }
