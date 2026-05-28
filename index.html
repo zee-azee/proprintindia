@@ -370,13 +370,13 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 .pop-lbl { position: absolute; top: -1px; right: 14px; padding: 2px 8px; border-radius: 0 0 6px 6px; font-size: 10px; font-weight: 600; }
 .pop-lbl.c { background: var(--crisp); color: white; }
 .pop-lbl.p { background: var(--pro); color: white; }
-.pk-name { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--light); margin-bottom: 10px; }
-.pk-inr { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
-.pk-usd { font-size: 11px; color: var(--light); margin-bottom: 12px; margin-top: 2px; }
-.pk-credits { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-.pk-per { font-size: 11px; color: var(--light); margin-bottom: 12px; }
+.pk-name { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;color: #f8fafc;; margin-bottom: 10px; }
+.pk-inr { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1; color: white; }
+.pk-usd { font-size: 11px; color:#94a3b8;; margin-bottom: 12px; margin-top: 2px; }
+.pk-credits { font-size: 15px; font-weight: 600; margin-bottom: 2px;color:#e2e8f0; }
+.pk-per { font-size: 11px; color:#94a3b8; margin-bottom: 12px; }
 .pk-div { height: 1px; background: var(--border); margin-bottom: 10px; }
-.pk-feat { font-size: 12px; color: var(--mid); margin-bottom: 5px; display: flex; gap: 6px; }
+.pk-feat { font-size: 12px;  color:#cbd5e1; margin-bottom: 5px; display: flex; gap: 6px; }
 .pk-feat::before { content: '✓'; color: var(--pro); font-size: 11px; flex-shrink: 0; }
 .btn-pk { width: 100%; margin-top: 14px; padding: 9px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
 .btn-pk.c { background: var(--crisp); color: white; }
@@ -434,6 +434,13 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   .pcrd {
   display: flex;
   flex-direction: column;
+    
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
 }
 
 .pcrd button {
