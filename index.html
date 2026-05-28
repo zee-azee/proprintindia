@@ -14,9 +14,18 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
   font-family: 'Inter', sans-serif;
-  background: #f9f9f9;
-  color: #111;
-  scroll-behavior: smooth;
+  background:
+    radial-gradient(circle at top left, #1e293b 0%, transparent 30%),
+    radial-gradient(circle at bottom right, #312e81 0%, transparent 30%),
+    linear-gradient(135deg, #020617 0%, #0f172a 50%, #111827 100%);
+    
+  color: #f8fafc;
+
+  margin: 0;
+  min-height: 100vh;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 :root {
   --bg: #f9f9f9;
@@ -52,7 +61,7 @@
   border: 1px solid rgba(255,255,255,0.5);
   font-size: 13px;
   font-weight: 600;
-  color: #111;
+ color: #f8fafc
   margin-bottom: 28px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
 }
@@ -63,7 +72,7 @@
   line-height: 1;
   letter-spacing: -3px;
   margin-bottom: 20px;
-  color: #111;
+ color: #f8fafc
 }
 
 .hero h1 em {
@@ -138,7 +147,7 @@
 .stat strong {
   font-size: 24px;
   font-weight: 700;
-  color: #111;
+ color: #f8fafc
 }
 
 .stat span {
@@ -211,7 +220,8 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 .pill { background: var(--white); border: 1px solid var(--border); border-radius: 100px; padding: 4px 12px; font-size: 12px; color: var(--mid); }
 
 /* CARD */
-.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+.card {background: rgba(255,255,255,0.04);border: 1px solid rgba(255,255,255,0.08);backdrop-filter: blur(12px);border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);padding: 22px; margin-bottom: 14px; }
 .card-head { font-size: 13px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
 .step-circle { width: 20px; height: 20px; background: var(--ink); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
 
@@ -264,13 +274,32 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 .error-box { display: none; padding: 11px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 7px; font-size: 13px; color: var(--red); margin-top: 12px; }
 .error-box.show { display: block; }
 
-.btn-enhance { width: 100%; padding: 13px; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.btn-enhance.c { background: var(--crisp); color: white; }
-.btn-enhance.c:hover:not(:disabled) { background: #d97706; }
-.btn-enhance.p { background: var(--pro); color: white; }
-.btn-enhance.p:hover:not(:disabled) { background: #059669; }
-.btn-enhance:disabled { opacity: .4; cursor: not-allowed; }
+.btn-enhance {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(
+    90deg,
+    #7c3aed,
+    #2563eb
+  );
+  color: white;
+  border: none;
+  border-radius: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all .3s ease;
+}
 
+.btn-enhance:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(124,58,237,.35);
+}
+
+.btn-enhance:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
 /* PROGRESS */
 .prog-card { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
 .prog-card.show { display: block; }
@@ -471,18 +500,27 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   width:90%;
   max-width:1200px;
   margin:auto;
+  background: rgba(255,255,255,0.04);
+backdrop-filter: blur(14px);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 28px;
+box-shadow: 0 20px 60px rgba(0,0,0,.45);
 }
 
 .navbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  .navbar{
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
 }
 
 .ppi-logo{
   font-size:28px;
   font-weight:800;
-  color:#111;
+  color: #f8fafc;
 }
 
 .nav-links{
@@ -499,7 +537,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
 }
 
 .nav-links a:hover{
-  color:#000;
+  color: #ffffff;
 }
 
 .nav-btn{
