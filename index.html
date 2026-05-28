@@ -453,17 +453,71 @@ backdrop-filter: blur(14px);; border-radius: 50%; display: flex; align-items: ce
 .never { text-align: center; margin-top: 16px; font-size: 12px; color: var(--light); }
 
 /* VS TABLE */
-.vs-wrap { margin-top: 40px; }
-.vs-tbl { width: 100%; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 16px; }
-.vs-row { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 11px 16px; border-bottom: 1px solid var(--border); align-items: center; font-size: 13px; }
-.vs-row:last-child { border-bottom: none; }
-.vs-row.hdr { background: var(--bg); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--light); padding: 10px 16px; }
-.vs-row:nth-child(even):not(.hdr) { background: var(--bg); }
-.vs-feat {color: rgba(248,250,252,0.72); }
-.vs-them { text-align: center; color: var(--light); }
-.vs-us { text-align: center; font-weight: 600; }
-.y { color: var(--pro); }
-.n { color: var(--red); }
+/* VS TABLE */
+.vs-wrap{
+  margin-top: 40px;
+}
+
+.vs-tbl{
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  margin-top: 16px;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+}
+
+.vs-row{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  align-items: center;
+}
+
+.vs-row:last-child{
+  border-bottom: none;
+}
+
+.vs-row.hdr{
+  background: rgba(255,255,255,0.05);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #f8fafc;
+}
+
+.vs-row:nth-child(even):not(.hdr){
+  background: rgba(255,255,255,0.02);
+}
+
+.vs-feat{
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.vs-them{
+  text-align: center;
+  color: #cbd5e1;
+}
+
+.vs-us{
+  text-align: center;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.y{
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.n{
+  color: #ef4444;
+  font-weight: 700;
+}
 
 /* TOAST */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: all .25s; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.15); }
