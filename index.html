@@ -61,7 +61,7 @@
   border: 1px solid rgba(255,255,255,0.5);
   font-size: 13px;
   font-weight: 600;
- color: #f8fafc
+  color: #f8fafc;
   margin-bottom: 28px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
 }
@@ -554,13 +554,11 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   .nav-link { display: none; }
   .page { padding: 28px 16px 60px; }
   .hero h1 { font-size: 28px; }
- .model-grid {
-  display: flex;
-  gap: 16px;
-}
-
-.model-opt {
-  flex: 1;
+.model-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: stretch;
 }
   .pgrid { grid-template-columns: 1fr; }
   footer { flex-direction: column; gap: 6px; text-align: center; }
@@ -631,7 +629,7 @@ footer { margin-top: 64px; padding: 22px 32px; border-top: 1px solid var(--borde
   .pk-btn:hover {
     background: #111;
     color: #fff;
-  
+  }
 
 /* NAVBAR */
 
@@ -697,6 +695,12 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
   border-radius:14px;
   text-decoration:none;
   font-weight:700;
+  /* MOBILE */
+@media (max-width: 768px) {
+  .model-grid {
+    grid-template-columns: 1fr;
+  }
+}
 }
 </style>
 </head>
