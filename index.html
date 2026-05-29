@@ -444,7 +444,18 @@ backdrop-filter: blur(14px);; border-radius: 50%; display: flex; align-items: ce
 .ptab { padding: 8px 20px; background: transparent; border: none; font-size: 13px; font-weight: 500; color: rgba(248,250,252,0.72); cursor: pointer; font-family: 'Inter', sans-serif; transition: all .15s; }
 .ptab.ac { background: var(--crisp-bg); color: var(--crisp); font-weight: 600; }
 .ptab.ap { background: var(--pro-bg); color: var(--pro); font-weight: 600; }
-.pgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.pgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:start;}
+  @media (max-width:900px){
+  .pgrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media (max-width:580px){
+  .pgrid{
+    grid-template-columns:1fr;
+  }
+}
 .pcrd { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: all .15s; position: relative; }
 .pcrd:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.05); }
 .pcrd.pop-c { border-color: var(--crisp); }
