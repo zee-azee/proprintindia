@@ -753,7 +753,28 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
         grid-template-columns:repeat(2,1fr) !important;
     }
 }
+#panP .pgrid{
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:18px !important;
+}
 
+#panP .pcrd{
+    width:auto !important;
+    min-width:0 !important;
+}
+
+@media (max-width:900px){
+    #panP .pgrid{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+}
+
+@media (max-width:580px){
+    #panP .pgrid{
+        grid-template-columns:1fr !important;
+    }
+}
 @media (max-width:580px){
     #panC .pgrid{
         grid-template-columns:1fr !important;
