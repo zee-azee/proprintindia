@@ -737,6 +737,28 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
   }
 }
 }
+  #panC .pgrid{
+    display:grid !important;
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:18px !important;
+}
+
+#panC .pcrd{
+    width:auto !important;
+    min-width:0 !important;
+}
+
+@media (max-width:900px){
+    #panC .pgrid{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+}
+
+@media (max-width:580px){
+    #panC .pgrid{
+        grid-template-columns:1fr !important;
+    }
+}
 </style>
 </head>
 <body>
