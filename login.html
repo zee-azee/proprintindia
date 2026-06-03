@@ -3,105 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProPrintIndia - Login</title>
+    <title>ProPrintIndia - Authentication</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 40px; background: #f9f9f9; }
-        .auth-container { max-width: 400px; margin: 0 auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .auth-container { 
+            max-width: 400px; 
+            width: 100%;
+            margin: 0 auto; 
+            padding: 30px; 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 10px;
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 16px;
+        }
+        #btn-main {
+            background: #007bff; 
+            color: white; 
+            transition: background 0.2s;
+        }
+        #btn-main:hover { background: #0056b3; }
         .hidden { display: none; }
+        
+        /* Interactive feedback messages */
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        
+        .toggle-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #28a745;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="auth-container">
         <div id="logged-out-view">
-            <h2>Welcome to ProPrintIndia</h2>
-            <p>Sign in or create an account to start enhancing images.</p>
+            <h2 id="auth-title">Welcome to ProPrintIndia</h2>
+            <p id="auth-subtitle">Sign in to start enhancing images.</p>
+            
             <input type="email" id="email" placeholder="Your Email">
             <input type="password" id="password" placeholder="Your Password">
-            <button id="btn-login" onclick="login()">Log In</button>
-            <button id="btn-signup" style="background: #28a745; margin-top: 10px;" onclick="signUp()">Sign Up Instead</button>
+            
+            <button id="btn-main" onclick="handleAuth()">Log In</button>
+            <div id="toggle-text" class="toggle-link" onclick="toggleMode()">Sign Up Instead</div>
+            
+            <div id="msg" class="status-msg hidden"></div>
         </div>
 
         <div id="logged-in-view" class="hidden">
-            <h2>Hello, <span id="user-email"></span>!</h2>
-            <p>Your Balance: <strong><span id="user-credits">...</span> Credits</strong></p>
-            <hr>
-            <p>🎉 You can now securely use the tools!</p>
-            <button style="background: #dc3545;" onclick="logout()">Log Out</button>
+            <h2>Welcome Back!</h2>
+            <p>Logged in as: <strong id="user-email"></strong></p>
+            <p>Your Trial Credits: <strong id="user-credits">0</strong></p>
+            <button onclick="logout()" style="background: #dc3545; color: white; margin-top: 20px;">Log Out</button>
         </div>
     </div>
 
     <script>
-        // Your exact Supabase URL project endpoint
+        // Automatic Supabase Connection Setup
         const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-        
-        // 🚨 PASTE YOUR ANON KEY INSIDE THE QUOTES BELOW
         const SUPABASE_ANON_KEY = sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6;
-        
-        // Initialize Supabase Client
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Sign Up Function
-        async function signUp() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        let isSignUpMode = false;
+
+        // Gracefully switches layouts when clicking the link
+        function toggleMode() {
+            isSignUpMode = !isSignUpMode;
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const mainBtn = document.getElementById('btn-main');
+            const toggleText = document.getElementById('toggle-text');
+            const msg = document.getElementById('msg');
             
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) alert(error.message);
-            else alert("Sign-up successful! Check your email for a confirmation link.");
-        }
+            msg.classList.add('hidden'); 
 
-        // Log In Function
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
-        }
-
-        // Log Out Function
-        async function logout() {
-            await supabaseClient.auth.signOut();
-        }
-
-        // Monitor Auth Changes (Keeps UI updated)
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            const loggedOutView = document.getElementById('logged-out-view');
-            const loggedInView = document.getElementById('logged-in-view');
-            
-            if (session) {
-                loggedOutView.classList.add('hidden');
-                loggedInView.classList.remove('hidden');
-                document.getElementById('user-email').innerText = session.user.email;
-                
-                // Fetch live database credits
-                fetchCredits(session.user.id);
+            if (isSignUpMode) {
+                title.innerText = "Create an Account";
+                subtitle.innerText = "Sign up to claim your 3 free trial credits.";
+                mainBtn.innerText = "Sign Up";
+                mainBtn.style.background = "#28a745";
+                toggleText.innerText = "Already have an account? Log In Instead";
+                toggleText.style.color = "#007bff";
             } else {
-                loggedOutView.classList.remove('hidden');
-                loggedInView.classList.add('hidden');
-            }
-        });
-
-        // Fetch Live User Credits From Profiles Table
-        async function fetchCredits(userId) {
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('credits')
-                .eq('id', userId)
-                .single();
-            
-            if (data) {
-                document.getElementById('user-credits').innerText = data.credits;
-            } else if (error) {
-                console.error("Error fetching credits:", error);
+                title.innerText = "Welcome to ProPrintIndia";
+                subtitle.innerText = "Sign in to start enhancing images.";
+                mainBtn.innerText = "Log In";
+                mainBtn.style.background = "#007bff";
+                toggleText.innerText = "Sign Up Instead";
+                toggleText.style.color = "#28a745";
             }
         }
+
+        // Handles submitting credentials to your database
+        async function handleAuth() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showMsg("Please enter both an email and password.", "error");
+                return;
+            }
+
+            showMsg("Processing authorization...", "success");
+
+            if (isSignUpMode) {
+                const { data, error } = await _supabase.auth.signUp({ email, password });
+                if (error) {
+                    showMsg(error.message, "error");
+                } else {
+                    showMsg("Account created successfully! Check your email inbox for a verification link.", "success");
+                }
+            } else {
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    showMsg(error.message, "error");
+                } else {
+                    showMsg("Login successful!", "success");
+                    checkUser();
+                }
+            }
+        }
+
+        function showMsg(text, type) {
+            const msg = document.getElementById('msg');
+            msg.innerText = text;
+            msg.className = "status-msg " + type;
+        }
+
+        // Automatically displays data if a user is already authenticated
+        async function checkUser() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (user) {
+                document.getElementById('logged-out-view').classList.add('hidden');
+                document.getElementById('logged-in-view').classList.remove('hidden');
+                document.getElementById('user-email').innerText = user.email;
+
+                // Grab credit count from your profiles table 
+                const { data: profile } = await _supabase
+                    .from('profiles')
+                    .select('credits')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    document.getElementById('user-credits').innerText = profile.credits;
+                }
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            document.getElementById('logged-out-view').classList.remove('hidden');
+            document.getElementById('logged-in-view').classList.add('hidden');
+            document.getElementById('email').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('msg').classList.add('hidden');
+            isSignUpMode = true;
+            toggleMode();
+        }
+
+        // Check authentication state immediately on load
+        checkUser();
     </script>
 </body>
 </html>
