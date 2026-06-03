@@ -51,7 +51,6 @@
         #btn-main:hover { background: #0056b3; }
         .hidden { display: none; }
         
-        /* Interactive feedback messages */
         .status-msg {
             margin-top: 15px;
             padding: 10px;
@@ -83,8 +82,8 @@
             <input type="email" id="email" placeholder="Your Email">
             <input type="password" id="password" placeholder="Your Password">
             
-            <button id="btn-main" onclick="handleAuth()">Log In</button>
-            <div id="toggle-text" class="toggle-link" onclick="toggleMode()">Sign Up Instead</div>
+            <button id="btn-main" onclick="executeAuthAction()">Log In</button>
+            <div id="toggle-text" class="toggle-link" onclick="handleFormToggle()">Sign Up Instead</div>
             
             <div id="msg" class="status-msg hidden"></div>
         </div>
@@ -93,20 +92,29 @@
             <h2>Welcome Back!</h2>
             <p>Logged in as: <strong id="user-email"></strong></p>
             <p>Your Trial Credits: <strong id="user-credits">0</strong></p>
-            <button onclick="logout()" style="background: #dc3545; color: white; margin-top: 20px;">Log Out</button>
+            <button onclick="executeLogout()" style="background: #dc3545; color: white; margin-top: 20px;">Log Out</button>
         </div>
     </div>
 
     <script>
-        // Automatic Supabase Connection Setup
+        // 1. Core State
+        var isSignUpMode = false;
+
+        // 2. Database Connection Configuration
         const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-        const SUPABASE_ANON_KEY = sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6; // <-- Triple check this key starts with sb_publishable_
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_ANON_KEY = "PASTE_YOUR_COPIED_PUBLISHABLE_KEY_HERE"; 
+        
+        let _supabase;
+        try {
+            if (typeof supabase !== 'undefined') {
+                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.error("Initialization error:", e);
+        }
 
-        let isSignUpMode = false;
-
-        // Gracefully switches layouts when clicking the link
-        function toggleMode() {
+        // 3. UI Toggle Logic
+        function handleFormToggle() {
             isSignUpMode = !isSignUpMode;
             const title = document.getElementById('auth-title');
             const subtitle = document.getElementById('auth-subtitle');
@@ -114,105 +122,129 @@
             const toggleText = document.getElementById('toggle-text');
             const msg = document.getElementById('msg');
             
-            msg.classList.add('hidden'); 
+            if (msg) msg.classList.add('hidden'); 
 
             if (isSignUpMode) {
-                title.innerText = "Create an Account";
-                subtitle.innerText = "Sign up to claim your 3 free trial credits.";
-                mainBtn.innerText = "Sign Up";
-                mainBtn.style.background = "#28a745";
-                toggleText.innerText = "Already have an account? Log In Instead";
-                toggleText.style.color = "#007bff";
+                if (title) title.innerText = "Create an Account";
+                if (subtitle) subtitle.innerText = "Sign up to claim your 3 free trial credits.";
+                if (mainBtn) {
+                    mainBtn.innerText = "Sign Up";
+                    mainBtn.style.background = "#28a745";
+                }
+                if (toggleText) {
+                    toggleText.innerText = "Already have an account? Log In Instead";
+                    toggleText.style.color = "#007bff";
+                }
             } else {
-                title.innerText = "Welcome to ProPrintIndia";
-                subtitle.innerText = "Sign in to start enhancing images.";
-                mainBtn.innerText = "Log In";
-                mainBtn.style.background = "#007bff";
-                toggleText.innerText = "Sign Up Instead";
-                toggleText.style.color = "#28a745";
+                if (title) title.innerText = "Welcome to ProPrintIndia";
+                if (subtitle) subtitle.innerText = "Sign in to start enhancing images.";
+                if (mainBtn) {
+                    mainBtn.innerText = "Log In";
+                    mainBtn.style.background = "#007bff";
+                }
+                if (toggleText) {
+                    toggleText.innerText = "Sign Up Instead";
+                    toggleText.style.color = "#28a745";
+                }
             }
         }
 
-        // Handles submitting credentials to your database with an explicit safety net
-        async function handleAuth() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+        // 4. Central Form Submission Engine
+        async function executeAuthAction() {
+            const emailEl = document.getElementById('email');
+            const passwordEl = document.getElementById('password');
+            
+            if (!emailEl || !passwordEl) return;
+
+            const email = emailEl.value.trim();
+            const password = passwordEl.value;
             
             if (!email || !password) {
-                showMsg("Please enter both an email and password.", "error");
+                displayStatus("Please enter both an email and password.", "error");
                 return;
             }
 
-            showMsg("Processing authorization...", "success");
+            displayStatus("Processing request...", "success");
+
+            if (!_supabase) {
+                displayStatus("Connection Error: Supabase core library failed to load.", "error");
+                return;
+            }
 
             try {
                 if (isSignUpMode) {
+                    // Send registration request to Supabase
                     const { data, error } = await _supabase.auth.signUp({ email, password });
                     if (error) {
-                        showMsg(error.message, "error");
+                        displayStatus(error.message, "error");
                     } else {
-                        showMsg("Account created successfully! Check your email inbox for a verification link.", "success");
+                        displayStatus("Account created! Check your email inbox for a verification link.", "success");
                     }
                 } else {
+                    // Send login request to Supabase
                     const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                     if (error) {
-                        showMsg(error.message, "error");
+                        displayStatus(error.message, "error");
                     } else {
-                        showMsg("Login successful!", "success");
-                        checkUser();
+                        displayStatus("Login successful!", "success");
+                        syncUserSession();
                     }
                 }
             } catch (err) {
-                // This forces the script to print hidden browser/network errors directly on the screen
-                showMsg("Connection Error: " + err.message, "error");
+                displayStatus("Network Connection Error: " + err.message, "error");
             }
         }
 
-        function showMsg(text, type) {
+        function displayStatus(text, type) {
             const msg = document.getElementById('msg');
-            msg.innerText = text;
-            msg.className = "status-msg " + type;
-            msg.classList.remove('hidden'); // Ensures the box visually unhides
+            if (msg) {
+                msg.innerText = text;
+                msg.className = "status-msg " + type;
+                msg.classList.remove('hidden');
+            }
         }
 
-        // Automatically displays data if a user is already authenticated
-        async function checkUser() {
+        // 5. Session Management
+        async function syncUserSession() {
+            if (!_supabase) return;
             try {
                 const { data: { user } } = await _supabase.auth.getUser();
                 if (user) {
-                    document.getElementById('logged-out-view').classList.add('hidden');
-                    document.getElementById('logged-in-view').classList.remove('hidden');
-                    document.getElementById('user-email').innerText = user.email;
+                    if (document.getElementById('logged-out-view')) document.getElementById('logged-out-view').classList.add('hidden');
+                    if (document.getElementById('logged-in-view')) document.getElementById('logged-in-view').classList.remove('hidden');
+                    if (document.getElementById('user-email')) document.getElementById('user-email').innerText = user.email;
 
-                    // Grab credit count from your profiles table 
                     const { data: profile } = await _supabase
                         .from('profiles')
                         .select('credits')
                         .eq('id', user.id)
                         .single();
 
-                    if (profile) {
+                    if (profile && document.getElementById('user-credits')) {
                         document.getElementById('user-credits').innerText = profile.credits;
                     }
                 }
             } catch (err) {
-                console.error("Profile sync exception:", err);
+                console.error("Session sync error:", err);
             }
         }
 
-        async function logout() {
-            await _supabase.auth.signOut();
-            document.getElementById('logged-out-view').classList.remove('hidden');
-            document.getElementById('logged-in-view').classList.add('hidden');
-            document.getElementById('email').value = "";
-            document.getElementById('password').value = "";
-            document.getElementById('msg').classList.add('hidden');
+        async function executeLogout() {
+            if (_supabase) await _supabase.auth.signOut();
+            if (document.getElementById('logged-out-view')) document.getElementById('logged-out-view').classList.remove('hidden');
+            if (document.getElementById('logged-in-view')) document.getElementById('logged-in-view').classList.add('hidden');
+            if (document.getElementById('email')) document.getElementById('email').value = "";
+            if (document.getElementById('password')) document.getElementById('password').value = "";
+            if (document.getElementById('msg')) document.getElementById('msg').classList.add('hidden');
+            
             isSignUpMode = true;
-            toggleMode();
+            handleFormToggle();
         }
 
-        // Check authentication state immediately on load
-        checkUser();
+        // Check login state immediately when page displays
+        if (typeof supabase !== 'undefined') {
+            syncUserSession();
+        }
     </script>
 </body>
 </html>
