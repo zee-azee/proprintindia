@@ -100,7 +100,7 @@
     <script>
         // Automatic Supabase Connection Setup
         const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-        const SUPABASE_ANON_KEY = sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6;
+        const SUPABASE_ANON_KEY = sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6; // <-- Triple check this key starts with sb_publishable_
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isSignUpMode = false;
@@ -133,7 +133,7 @@
             }
         }
 
-        // Handles submitting credentials to your database
+        // Handles submitting credentials to your database with an explicit safety net
         async function handleAuth() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -145,21 +145,26 @@
 
             showMsg("Processing authorization...", "success");
 
-            if (isSignUpMode) {
-                const { data, error } = await _supabase.auth.signUp({ email, password });
-                if (error) {
-                    showMsg(error.message, "error");
+            try {
+                if (isSignUpMode) {
+                    const { data, error } = await _supabase.auth.signUp({ email, password });
+                    if (error) {
+                        showMsg(error.message, "error");
+                    } else {
+                        showMsg("Account created successfully! Check your email inbox for a verification link.", "success");
+                    }
                 } else {
-                    showMsg("Account created successfully! Check your email inbox for a verification link.", "success");
+                    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                    if (error) {
+                        showMsg(error.message, "error");
+                    } else {
+                        showMsg("Login successful!", "success");
+                        checkUser();
+                    }
                 }
-            } else {
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    showMsg(error.message, "error");
-                } else {
-                    showMsg("Login successful!", "success");
-                    checkUser();
-                }
+            } catch (err) {
+                // This forces the script to print hidden browser/network errors directly on the screen
+                showMsg("Connection Error: " + err.message, "error");
             }
         }
 
@@ -167,26 +172,31 @@
             const msg = document.getElementById('msg');
             msg.innerText = text;
             msg.className = "status-msg " + type;
+            msg.classList.remove('hidden'); // Ensures the box visually unhides
         }
 
         // Automatically displays data if a user is already authenticated
         async function checkUser() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (user) {
-                document.getElementById('logged-out-view').classList.add('hidden');
-                document.getElementById('logged-in-view').classList.remove('hidden');
-                document.getElementById('user-email').innerText = user.email;
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) {
+                    document.getElementById('logged-out-view').classList.add('hidden');
+                    document.getElementById('logged-in-view').classList.remove('hidden');
+                    document.getElementById('user-email').innerText = user.email;
 
-                // Grab credit count from your profiles table 
-                const { data: profile } = await _supabase
-                    .from('profiles')
-                    .select('credits')
-                    .eq('id', user.id)
-                    .single();
+                    // Grab credit count from your profiles table 
+                    const { data: profile } = await _supabase
+                        .from('profiles')
+                        .select('credits')
+                        .eq('id', user.id)
+                        .single();
 
-                if (profile) {
-                    document.getElementById('user-credits').innerText = profile.credits;
+                    if (profile) {
+                        document.getElementById('user-credits').innerText = profile.credits;
+                    }
                 }
+            } catch (err) {
+                console.error("Profile sync exception:", err);
             }
         }
 
