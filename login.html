@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProPrintIndia - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; background: #f9f9f9; }
+        .auth-container { max-width: 400px; margin: 0 auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div id="logged-out-view">
+            <h2>Welcome to ProPrintIndia</h2>
+            <p>Sign in or create an account to start enhancing images.</p>
+            <input type="email" id="email" placeholder="Your Email">
+            <input type="password" id="password" placeholder="Your Password">
+            <button id="btn-login" onclick="login()">Log In</button>
+            <button id="btn-signup" style="background: #28a745; margin-top: 10px;" onclick="signUp()">Sign Up Instead</button>
+        </div>
+
+        <div id="logged-in-view" class="hidden">
+            <h2>Hello, <span id="user-email"></span>!</h2>
+            <p>Your Balance: <strong><span id="user-credits">...</span> Credits</strong></p>
+            <hr>
+            <p>🎉 You can now securely use the tools!</p>
+            <button style="background: #dc3545;" onclick="logout()">Log Out</button>
+        </div>
+    </div>
+
+    <script>
+        // Your exact Supabase URL project endpoint
+        const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
+        
+        // 🚨 PASTE YOUR ANON KEY INSIDE THE QUOTES BELOW
+        const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_PUBLIC_KEY_HERE";
+        
+        // Initialize Supabase Client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Sign Up Function
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) alert(error.message);
+            else alert("Sign-up successful! Check your email for a confirmation link.");
+        }
+
+        // Log In Function
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+        }
+
+        // Log Out Function
+        async function logout() {
+            await supabaseClient.auth.signOut();
+        }
+
+        // Monitor Auth Changes (Keeps UI updated)
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const loggedOutView = document.getElementById('logged-out-view');
+            const loggedInView = document.getElementById('logged-in-view');
+            
+            if (session) {
+                loggedOutView.classList.add('hidden');
+                loggedInView.classList.remove('hidden');
+                document.getElementById('user-email').innerText = session.user.email;
+                
+                // Fetch live database credits
+                fetchCredits(session.user.id);
+            } else {
+                loggedOutView.classList.remove('hidden');
+                loggedInView.classList.add('hidden');
+            }
+        });
+
+        // Fetch Live User Credits From Profiles Table
+        async function fetchCredits(userId) {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('credits')
+                .eq('id', userId)
+                .single();
+            
+            if (data) {
+                document.getElementById('user-credits').innerText = data.credits;
+            } else if (error) {
+                console.error("Error fetching credits:", error);
+            }
+        }
+    </script>
+</body>
+</html>
