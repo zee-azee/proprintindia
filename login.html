@@ -72,20 +72,6 @@
             font-weight: bold;
         }
         .toggle-link:hover { text-decoration: underline; }
-
-        /* Debug Logger Styling */
-        .debug-box {
-            margin-top: 20px;
-            padding: 10px;
-            background: #222;
-            color: #00ff00;
-            font-family: monospace;
-            font-size: 11px;
-            border-radius: 4px;
-            max-height: 120px;
-            overflow-y: auto;
-            text-align: left;
-        }
     </style>
 </head>
 <body>
@@ -110,44 +96,25 @@
             <p>Your Trial Credits: <strong id="user-credits">0</strong></p>
             <button onclick="executeLogout()" style="background: #dc3545; color: white; margin-top: 20px;">Log Out</button>
         </div>
-
-        <div class="debug-box">
-            <div><strong>System Status Logs:</strong></div>
-            <div id="debug-logs">Initializing auth system...</div>
-        </div>
     </div>
 
     <script>
-        // 1. Core State
+        // 1. Core Configuration
         var isSignUpMode = false;
-
-        // 2. Database Connection Configuration (Automatically maps to your project)
         const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH"; 
         
         let _supabase;
-
-        function logDebug(message) {
-            const container = document.getElementById('debug-logs');
-            if (container) {
-                container.innerHTML += `<br>⏱️ [${new Date().toLocaleTimeString()}] ${message}`;
-                container.scrollTop = container.scrollHeight;
-            }
-            console.log(message);
-        }
 
         try {
             if (typeof supabase !== 'undefined') {
                 _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                logDebug("Supabase client built successfully.");
-            } else {
-                logDebug("CRITICAL: Supabase library script CDN didn't load.");
             }
         } catch (e) {
-            logDebug("Initialization crash: " + e.message);
+            console.error("Initialization error:", e);
         }
 
-        // 3. UI Toggle Logic
+        // 2. UI Toggle Logic
         function handleFormToggle() {
             isSignUpMode = !isSignUpMode;
             const title = document.getElementById('auth-title');
@@ -159,7 +126,6 @@
             if (msg) msg.classList.add('hidden'); 
 
             if (isSignUpMode) {
-                logDebug("Switched form mode to: SIGN UP");
                 if (title) title.innerText = "Create an Account";
                 if (subtitle) subtitle.innerText = "Sign up to claim your 3 free trial credits.";
                 if (mainBtn) {
@@ -171,7 +137,6 @@
                     toggleText.style.color = "#007bff";
                 }
             } else {
-                logDebug("Switched form mode to: LOG IN");
                 if (title) title.innerText = "Welcome to ProPrintIndia";
                 if (subtitle) subtitle.innerText = "Sign in to start enhancing images.";
                 if (mainBtn) {
@@ -185,11 +150,10 @@
             }
         }
 
-        // 4. Central Form Submission Engine
+        // 3. Form Submission
         async function executeAuthAction() {
             const emailEl = document.getElementById('email');
             const passwordEl = document.getElementById('password');
-            
             if (!emailEl || !passwordEl) return;
 
             const email = emailEl.value.trim();
@@ -197,52 +161,34 @@
             
             if (!email || !password) {
                 displayStatus("Please enter both an email and password.", "error");
-                logDebug("Validation rejected: Missing fields.");
                 return;
             }
 
             displayStatus("Processing request...", "success");
-            logDebug(`Connecting to server endpoints for mode [${isSignUpMode ? 'SIGNUP' : 'LOGIN'}]...`);
 
             if (!_supabase) {
-                displayStatus("Connection Error: Supabase core library failed to load.", "error");
-                logDebug("Submission aborted: _supabase object missing.");
-                return;
-            }
-
-            if (SUPABASE_ANON_KEY.includes("PASTE_YOUR")) {
-                displayStatus("Configuration Error: API Key missing.", "error");
-                logDebug("ERROR: You have not replaced the key placeholder with your actual key yet.");
+                displayStatus("Connection Error: Cloud library failed to load.", "error");
                 return;
             }
 
             try {
                 if (isSignUpMode) {
-                    logDebug("Awaiting cloud registration callback...");
                     const { data, error } = await _supabase.auth.signUp({ email, password });
-                    
                     if (error) {
-                        logDebug("Cloud rejected request: " + error.message);
                         displayStatus(error.message, "error");
                     } else {
-                        logDebug("Cloud transaction finalized successfully!");
                         displayStatus("Account created! Check your email inbox for a verification link.", "success");
                     }
                 } else {
-                    logDebug("Awaiting cloud credentials verification...");
                     const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                    
                     if (error) {
-                        logDebug("Cloud login rejected: " + error.message);
                         displayStatus(error.message, "error");
                     } else {
-                        logDebug("Cloud login validation verified successfully.");
                         displayStatus("Login successful!", "success");
                         syncUserSession();
                     }
                 }
             } catch (err) {
-                logDebug("Fatal browser network crash: " + err.message);
                 displayStatus("Network Connection Error: " + err.message, "error");
             }
         }
@@ -256,13 +202,12 @@
             }
         }
 
-        // 5. Session Management
+        // 4. Session Management
         async function syncUserSession() {
             if (!_supabase) return;
             try {
                 const { data: { user } } = await _supabase.auth.getUser();
                 if (user) {
-                    logDebug("User session active: " + user.email);
                     if (document.getElementById('logged-out-view')) document.getElementById('logged-out-view').classList.add('hidden');
                     if (document.getElementById('logged-in-view')) document.getElementById('logged-in-view').classList.remove('hidden');
                     if (document.getElementById('user-email')) document.getElementById('user-email').innerText = user.email;
@@ -278,20 +223,19 @@
                     }
                 }
             } catch (err) {
-                logDebug("Profile row matching exception: " + err.message);
+                console.log("Session error:", err.message);
             }
         }
 
         async function executeLogout() {
             if (_supabase) await _supabase.auth.signOut();
-            logDebug("Session cleared. User logged out.");
             if (document.getElementById('logged-out-view')) document.getElementById('logged-out-view').classList.remove('hidden');
             if (document.getElementById('logged-in-view')) document.getElementById('logged-in-view').classList.add('hidden');
             if (document.getElementById('email')) document.getElementById('email').value = "";
             if (document.getElementById('password')) document.getElementById('password').value = "";
             if (document.getElementById('msg')) document.getElementById('msg').classList.add('hidden');
             
-            isSignUpMode = true;
+            isSignUpMode = false;
             handleFormToggle();
         }
 
