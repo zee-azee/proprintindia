@@ -939,52 +939,38 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
     <div class="ppi-logo">
       ProPrintIndia
     </div>
+    <!-- PREMIUM FIXED DARK NAVBAR -->
+<nav class="premium-navbar">
+    <div class="nav-container">
+        <!-- Main Logo -->
+        <a href="index.html" class="nav-logo">ProPrintIndia</a>
 
-  // ─── NAVBAR AUTHENTICATION LOGIC ───
-const NAV_DB_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-const NAV_DB_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH";
-let _navClient;
+        <!-- Middle Links -->
+        <ul class="nav-menu">
+            <li><a href="#" class="nav-link">Home</a></li>
+            <li><a href="#" class="nav-link">Services</a></li>
+            <li><a href="#pricing" class="nav-link">Pricing</a></li>
+            <li><a href="#" class="nav-link">Portfolio</a></li>
+            <li><a href="#" class="nav-link">Contact</a></li>
+        </ul>
 
-if (typeof supabase !== 'undefined') {
-    _navClient = supabase.createClient(NAV_DB_URL, NAV_DB_KEY);
-    evaluateActiveSession();
-}
+        <!-- Right Side Dynamic Interface -->
+        <div class="nav-actions">
+            <!-- LOGGED OUT MODE -->
+            <a href="login.html" id="nav-login-btn" class="btn-nav-login">Login</a>
+            <a href="login.html" id="nav-signup-btn" class="btn-nav-getstarted">Get Started</a>
 
-async function evaluateActiveSession() {
-    if (!_navClient) return;
-    try {
-        const { data: { user } } = await _navClient.auth.getUser();
-        if (user) {
-            // Hide standard anonymous buttons
-            document.getElementById('nav-login-btn').classList.add('nav-hidden');
-            document.getElementById('nav-signup-btn').classList.add('nav-hidden');
-
-            // Populate account specifics and balance configurations
-            document.getElementById('nav-user-email').innerText = user.email;
-            document.getElementById('nav-logged-in-zone').classList.remove('nav-hidden');
-
-            // Connect to database table profiles to read live values
-            const { data: profile } = await _navClient
-                .from('profiles')
-                .select('credits')
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                document.getElementById('nav-credits').innerText = profile.credits;
-            }
-        }
-    } catch (err) {
-        console.error("Navbar verification connection issue:", err.message);
-    }
-}
-
-async function executeNavbarSignOut() {
-    if (_navClient) {
-        await _navClient.auth.signOut();
-        window.location.reload();
-    }
-}
+            <!-- LOGGED IN MODE -->
+            <div id="nav-logged-in-zone" class="nav-account-container nav-hidden">
+                <div class="account-details">
+                    <span id="nav-user-email" class="user-email">loading...</span>
+                    <span class="user-pill">Available Balance: <span id="nav-credits" class="credit-count">0</span> Credits</span>
+                </div>
+                <button class="btn-nav-logout" onclick="executeNavbarSignOut()">Log Out</button>
+            </div>
+        </div>
+    </div>
+</nav>
 </header>
 <nav>
   <div class="logo">
@@ -1575,6 +1561,49 @@ const response = await fetch("/api/create-order", {
 
   const rzp = new Razorpay(options);
   rzp.open();
+}
+</script>
+  <script>
+// ─── NAVBAR AUTHENTICATION LOGIC ───
+const NAV_DB_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
+const NAV_DB_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH";
+let _navClient;
+
+if (typeof supabase !== 'undefined') {
+    _navClient = supabase.createClient(NAV_DB_URL, NAV_DB_KEY);
+    evaluateActiveSession();
+}
+
+async function evaluateActiveSession() {
+    if (!_navClient) return;
+    try {
+        const { data: { user } } = await _navClient.auth.getUser();
+        if (user) {
+            document.getElementById('nav-login-btn').classList.add('nav-hidden');
+            document.getElementById('nav-signup-btn').classList.add('nav-hidden');
+            document.getElementById('nav-user-email').innerText = user.email;
+            document.getElementById('nav-logged-in-zone').classList.remove('nav-hidden');
+
+            const { data: profile } = await _navClient
+                .from('profiles')
+                .select('credits')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('nav-credits').innerText = profile.credits;
+            }
+        }
+    } catch (err) {
+        console.error("Navbar verification connection issue:", err.message);
+    }
+}
+
+async function executeNavbarSignOut() {
+    if (_navClient) {
+        await _navClient.auth.signOut();
+        window.location.reload();
+    }
 }
 </script>
 </body>
