@@ -940,21 +940,51 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
       ProPrintIndia
     </div>
 
-    <nav class="nav-links">
-      <a href="#">Home</a>
-      <a href="#">Services</a>
-      <a href="#">Pricing</a>
-      <a href="#">Portfolio</a>
-      <a href="#">Contact</a>
-    </nav>
+  // ─── NAVBAR AUTHENTICATION LOGIC ───
+const NAV_DB_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
+const NAV_DB_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH";
+let _navClient;
 
-    <div class="nav-actions">
-      <a href="login.html" class="login-btn">Login</a>
-      <a href="login.html" class="start-btn">Get Started</a>
-    </div>
+if (typeof supabase !== 'undefined') {
+    _navClient = supabase.createClient(NAV_DB_URL, NAV_DB_KEY);
+    evaluateActiveSession();
+}
 
-  </div>
+async function evaluateActiveSession() {
+    if (!_navClient) return;
+    try {
+        const { data: { user } } = await _navClient.auth.getUser();
+        if (user) {
+            // Hide standard anonymous buttons
+            document.getElementById('nav-login-btn').classList.add('nav-hidden');
+            document.getElementById('nav-signup-btn').classList.add('nav-hidden');
 
+            // Populate account specifics and balance configurations
+            document.getElementById('nav-user-email').innerText = user.email;
+            document.getElementById('nav-logged-in-zone').classList.remove('nav-hidden');
+
+            // Connect to database table profiles to read live values
+            const { data: profile } = await _navClient
+                .from('profiles')
+                .select('credits')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('nav-credits').innerText = profile.credits;
+            }
+        }
+    } catch (err) {
+        console.error("Navbar verification connection issue:", err.message);
+    }
+}
+
+async function executeNavbarSignOut() {
+    if (_navClient) {
+        await _navClient.auth.signOut();
+        window.location.reload();
+    }
+}
 </header>
 <nav>
   <div class="logo">
