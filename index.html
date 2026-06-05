@@ -973,26 +973,9 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
     </div>
 </nav>
 </header>
- <script>
+<script>
   (function() {
-      // 1. Create a bright floating diagnostic banner at the absolute top of the screen
-      const debugBanner = document.createElement('div');
-      debugBanner.style.position = 'fixed';
-      debugBanner.style.top = '0';
-      debugBanner.style.left = '0';
-      debugBanner.style.width = '100%';
-      debugBanner.style.background = '#e67e22';
-      debugBanner.style.color = '#fff';
-      debugBanner.style.textAlign = 'center';
-      debugBanner.style.padding = '12px 10px';
-      debugBanner.style.zIndex = '999999';
-      debugBanner.style.fontWeight = 'bold';
-      debugBanner.style.fontSize = '14px';
-      debugBanner.style.fontFamily = 'system-ui, sans-serif';
-      debugBanner.innerText = "🔍 STATUS: Diagnostic script initiated...";
-      document.body.appendChild(debugBanner);
-
-      // 2. Force inject layout rules so hiding items works instantly
+      // 1. Force inject layout rules so hiding items works instantly
       const style = document.createElement('style');
       style.innerHTML = '.nav-hidden { display: none !important; visibility: hidden !important; opacity: 0 !important; }';
       document.head.appendChild(style);
@@ -1000,75 +983,51 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
       const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
       const DB_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWtzbXltdmZrcWFjcW1iaG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDU1NDksImV4cCI6MjA1NjgyMTU0OX0.tOL_jshVClenI7_7RjC8wSoL7tQ5A_TNGHI"; 
       
-      // 3. Verify core library layer
-      if (typeof supabase === "undefined") {
-          debugBanner.innerText = "❌ ERROR: Supabase core engine is missing! Line 5 script did not load correctly.";
-          debugBanner.style.background = '#c0392b';
-          return;
-      }
-
-      debugBanner.innerText = "⚡ STATUS: Supabase loaded successfully. Checking connection parameters...";
-      const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
-      
-      async function checkSession() {
-          try {
-              debugBanner.innerText = "⏳ STATUS: Searching browser local storage for an active logged-in user session...";
-              const { data: { user }, error } = await supabaseClient.auth.getUser();
-              
-              if (error) {
-                  debugBanner.innerText = "❌ DATABASE ERROR: " + error.message;
-                  debugBanner.style.background = '#c0392b';
-                  return;
-              }
-
-              if (user) {
-                  debugBanner.innerText = "✅ SESSION FOUND! Logged in as: " + user.email + " | Updating layout elements now...";
-                  debugBanner.style.background = '#27ae60';
-                  
-                  // Hide Login and Get Started buttons
-                  const loginBtn = document.getElementById('nav-login-btn');
-                  const signupBtn = document.getElementById('nav-signup-btn');
-                  if (loginBtn) loginBtn.classList.add('nav-hidden');
-                  if (signupBtn) signupBtn.classList.add('nav-hidden');
-                  
-                  // Show the user profile block and set email
-                  const loggedInZone = document.getElementById('nav-logged-in-zone');
-                  if (loggedInZone) {
-                      const emailSpan = document.getElementById('nav-user-email');
-                      if (emailSpan) emailSpan.innerText = user.email;
-                      loggedInZone.classList.remove('nav-hidden');
-                  } else {
-                      debugBanner.innerText = "⚠️ WARNING: User session exists, but element 'nav-logged-in-zone' is missing from the page layout!";
-                      debugBanner.style.background = '#f1c40f';
-                      debugBanner.style.color = '#000';
-                  }
-                  
-                  // Pull credits balance from database profiles table
-                  const { data: profile } = await supabaseClient
-                      .from('profiles')
-                      .select('credits')
-                      .eq('id', user.id)
-                      .single();
+      if (typeof supabase !== "undefined") {
+          const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
+          
+          async function checkSession() {
+              try {
+                  const { data: { user } } = await supabaseClient.auth.getUser();
+                  if (user) {
+                      // Hide Login and Get Started buttons
+                      const loginBtn = document.getElementById('nav-login-btn');
+                      const signupBtn = document.getElementById('nav-signup-btn');
+                      if (loginBtn) loginBtn.classList.add('nav-hidden');
+                      if (signupBtn) signupBtn.classList.add('nav-hidden');
                       
-                  if (profile && document.getElementById('nav-credits')) {
-                      document.getElementById('nav-credits').innerText = profile.credits;
+                      // Show the user profile block and set email
+                      const loggedInZone = document.getElementById('nav-logged-in-zone');
+                      if (loggedInZone) {
+                          const emailSpan = document.getElementById('nav-user-email');
+                          if (emailSpan) emailSpan.innerText = user.email;
+                          loggedInZone.classList.remove('nav-hidden');
+                      }
+                      
+                      // Pull credits balance from database profiles table
+                      const { data: profile } = await supabaseClient
+                          .from('profiles')
+                          .select('credits')
+                          .eq('id', user.id)
+                          .single();
+                          
+                      if (profile && document.getElementById('nav-credits')) {
+                          document.getElementById('nav-credits').innerText = profile.credits;
+                      }
                   }
-              } else {
-                  debugBanner.innerText = "ℹ️ STATUS: Database connection clear, but NO user session was found saved in this browser window.";
-                  debugBanner.style.background = '#2980b9';
+              } catch (e) {
+                  console.error("Session matching error:", e);
               }
-          } catch (e) {
-              debugBanner.innerText = "❌ CRASH: Script hit a fatal runtime error: " + e.message;
-              debugBanner.style.background = '#c0392b';
           }
-      }
-      
-      setTimeout(checkSession, 300);
+          
+          checkSession();
 
-      window.executeNavbarSignOut = async function() {
-          await supabaseClient.auth.signOut();
-          window.location.reload();
-      };
+          // Connect the sign out button action
+          window.executeNavbarSignOut = async function() {
+              await supabaseClient.auth.signOut();
+              window.location.reload();
+          };
+      }
   })();
 </script>
 <div class="page">
