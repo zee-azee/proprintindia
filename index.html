@@ -973,6 +973,63 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
     </div>
 </nav>
 </header>
+ <script>
+  (function() {
+      // 1. Force inject layout rules so hiding items works instantly
+      const style = document.createElement('style');
+      style.innerHTML = '.nav-hidden { display: none !important; visibility: hidden !important; opacity: 0 !important; }';
+      document.head.appendChild(style);
+
+      const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
+      const DB_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWtzbXltdmZrcWFjcW1iaG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDU1NDksImV4cCI6MjA1NjgyMTU0OX0.tOL_jshVClenI7_7RjC8wSoL7tQ5A_TNGHI"; 
+      
+      if (typeof supabase !== "undefined") {
+          const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
+          
+          async function checkSession() {
+              try {
+                  const { data: { user } } = await supabaseClient.auth.getUser();
+                  if (user) {
+                      // Hide Login and Get Started buttons
+                      const loginBtn = document.getElementById('nav-login-btn');
+                      const signupBtn = document.getElementById('nav-signup-btn');
+                      if (loginBtn) loginBtn.classList.add('nav-hidden');
+                      if (signupBtn) signupBtn.classList.add('nav-hidden');
+                      
+                      // Show the user profile block and set email
+                      const loggedInZone = document.getElementById('nav-logged-in-zone');
+                      if (loggedInZone) {
+                          const emailSpan = document.getElementById('nav-user-email');
+                          if (emailSpan) emailSpan.innerText = user.email;
+                          loggedInZone.classList.remove('nav-hidden');
+                      }
+                      
+                      // Pull credits balance from database profiles table
+                      const { data: profile } = await supabaseClient
+                          .from('profiles')
+                          .select('credits')
+                          .eq('id', user.id)
+                          .single();
+                          
+                      if (profile && document.getElementById('nav-credits')) {
+                          document.getElementById('nav-credits').innerText = profile.credits;
+                      }
+                  }
+              } catch (e) {
+                  console.error("Session matching error:", e);
+              }
+          }
+          
+          checkSession();
+
+          // Connect the sign out button action
+          window.executeNavbarSignOut = async function() {
+              await supabaseClient.auth.signOut();
+              window.location.reload();
+          };
+      }
+  })();
+</script>
 <div class="page">
 
   <!-- HERO -->
