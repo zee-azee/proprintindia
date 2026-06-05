@@ -1617,8 +1617,9 @@ const response = await fetch("/api/create-order", {
 </script>
 <script>
   (function() {
-      const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
-      const DB_KEY = "sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6"; 
+      // 🔥 FIXED: Restored your exact database credentials from your project
+      const DB_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co"; 
+      const DB_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH"; 
       
       if (typeof supabase !== "undefined") {
           const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
@@ -1657,7 +1658,7 @@ const response = await fetch("/api/create-order", {
               }
           }
 
-          // Check session immediately
+          // Check session immediately on load
           supabaseClient.auth.getSession().then(({ data }) => {
               updateNavbarState(data?.session?.user || null);
           }).catch(() => updateNavbarState(null));
