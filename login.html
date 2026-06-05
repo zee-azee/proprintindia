@@ -144,51 +144,50 @@
         }
 
         // 3. Form Submission
-        async function executeAuthAction() {
-            const emailEl = document.getElementById('email');
-            const passwordEl = document.getElementById('password');
-            if (!emailEl || !passwordEl) return;
+async function executeAuthAction(event) {
+    if (event) event.preventDefault(); // 🔥 CRITICAL: Stops the browser from refreshing prematurely!
 
-            const email = emailEl.value.trim();
-            const password = passwordEl.value;
+    const emailEl = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    if (!emailEl || !passwordEl) return;
+
+    const email = emailEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!email || !password) {
+        displayStatus("Please enter both an email and password.", "error");
+        return;
+    }
+
+    displayStatus("Processing request...", "success");
+
+    if (!_supabase) {
+        displayStatus("Connection Error: Cloud library failed to load.", "error");
+        return;
+    }
+
+    try {
+        if (isSignUpMode) {
+            // Your existing Sign Up Logic
+            const { data, error } = await _supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            displayStatus("Registration successful! Check your email.", "success");
+        } else {
+            // 🔥 Your Login Logic: Wait completely for Supabase to write the local token
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
             
-            if (!email || !password) {
-                displayStatus("Please enter both an email and password.", "error");
-                return;
-            }
-
-            displayStatus("Processing request...", "success");
-
-            if (!_supabase) {
-                displayStatus("Connection Error: Cloud library failed to load.", "error");
-                return;
-            }
-
-            try {
-                if (isSignUpMode) {
-                    const { data, error } = await _supabase.auth.signUp({ email, password });
-                    if (error) {
-                        displayStatus(error.message, "error");
-                    } else {
-                        displayStatus("Account created successfully! Logging you in...", "success");
-                        // Automatically sign them in right after signing up
-                        await _supabase.auth.signInWithPassword({ email, password });
-                        window.location.href = 'index.html';
-                    }
-                } else {
-                    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                    if (error) {
-                        displayStatus(error.message, "error");
-                    } else {
-                        displayStatus("Login successful! Redirecting...", "success");
-                        window.location.href = 'index.html';
-                    }
-                }
-            } catch (err) {
-                displayStatus("Network Connection Error: " + err.message, "error");
-            }
+            displayStatus("Login successful! Redirecting...", "success");
+            
+            // Give the browser 400 milliseconds to securely settle the token into local storage before moving
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 400);
         }
-
+    } catch (err) {
+        displayStatus(err.message, "error");
+    }
+}
         function displayStatus(text, type) {
             const msg = document.getElementById('msg');
             if (msg) {
