@@ -1615,48 +1615,64 @@ const response = await fetch("/api/create-order", {
   rzp.open();
 }
 </script>
-  <script>
-// ─── NAVBAR AUTHENTICATION LOGIC ───
-const NAV_DB_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-const NAV_DB_KEY = "sb_publishable_KM7ZmF0yTgr36wSoL4t0SA_TlNGH";
-let _navClient;
+<script>
+  (function() {
+      const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
+      const DB_KEY = "sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6"; 
+      
+      if (typeof supabase !== "undefined") {
+          const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
+          
+          function updateNavbarState(user) {
+              const loginBtn = document.getElementById('nav-login-btn');
+              const signupBtn = document.getElementById('nav-signup-btn');
+              const loggedInZone = document.getElementById('nav-logged-in-zone');
+              const emailSpan = document.getElementById('nav-user-email');
+              const creditsSpan = document.getElementById('nav-credits');
 
-if (typeof supabase !== 'undefined') {
-    _navClient = supabase.createClient(NAV_DB_URL, NAV_DB_KEY);
-    evaluateActiveSession();
-}
+              if (user) {
+                  if (loginBtn) loginBtn.style.setProperty('display', 'none', 'important');
+                  if (signupBtn) signupBtn.style.setProperty('display', 'none', 'important');
+                  if (loggedInZone) {
+                      loggedInZone.classList.remove('nav-hidden');
+                      loggedInZone.style.setProperty('display', 'flex', 'important');
+                  }
+                  if (emailSpan) emailSpan.innerText = user.email;
 
-async function evaluateActiveSession() {
-    if (!_navClient) return;
-    try {
-        const { data: { user } } = await _navClient.auth.getUser();
-        if (user) {
-            document.getElementById('nav-login-btn').classList.add('nav-hidden');
-            document.getElementById('nav-signup-btn').classList.add('nav-hidden');
-            document.getElementById('nav-user-email').innerText = user.email;
-            document.getElementById('nav-logged-in-zone').classList.remove('nav-hidden');
+                  supabaseClient
+                      .from('profiles')
+                      .select('credits')
+                      .eq('id', user.id)
+                      .single()
+                      .then(({ data }) => {
+                          if (data && creditsSpan) creditsSpan.innerText = data.credits;
+                      }).catch(err => console.error(err));
+              } else {
+                  if (loginBtn) loginBtn.style.display = '';
+                  if (signupBtn) signupBtn.style.display = '';
+                  if (loggedInZone) {
+                      loggedInZone.classList.add('nav-hidden');
+                      loggedInZone.style.setProperty('display', 'none', 'important');
+                  }
+              }
+          }
 
-            const { data: profile } = await _navClient
-                .from('profiles')
-                .select('credits')
-                .eq('id', user.id)
-                .single();
+          // Check session immediately
+          supabaseClient.auth.getSession().then(({ data }) => {
+              updateNavbarState(data?.session?.user || null);
+          }).catch(() => updateNavbarState(null));
 
-            if (profile) {
-                document.getElementById('nav-credits').innerText = profile.credits;
-            }
-        }
-    } catch (err) {
-        console.error("Navbar verification connection issue:", err.message);
-    }
-}
+          // Listen dynamically for changes
+          supabaseClient.auth.onAuthStateChange((event, session) => {
+              updateNavbarState(session?.user || null);
+          });
 
-async function executeNavbarSignOut() {
-    if (_navClient) {
-        await _navClient.auth.signOut();
-        window.location.reload();
-    }
-}
+          window.executeNavbarSignOut = async function() {
+              await supabaseClient.auth.signOut();
+              window.location.reload();
+          };
+      }
+  })();
 </script>
 </body>
 </html>
