@@ -975,82 +975,67 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
 </header>
 <script>
   (function() {
-      // Create a persistent diagnostic dashboard on the screen
-      const box = document.createElement('div');
-      box.style.position = 'fixed';
-      box.style.bottom = '20px';
-      box.style.right = '20px';
-      box.style.width = '360px';
-      box.style.background = '#1a1a2e';
-      box.style.color = '#fff';
-      box.style.padding = '15px';
-      box.style.borderRadius = '10px';
-      box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-      box.style.zIndex = '999999';
-      box.style.fontFamily = 'monospace';
-      box.style.fontSize = '12px';
-      box.style.lineHeight = '1.5';
-      box.innerText = "⏳ Running Deep Diagnostics...\n\n";
-      document.body.appendChild(box);
-
-      function logStatus(text, type = 'info') {
-          const icons = { info: '🔹', success: '✅', error: '❌', warning: '⚠️' };
-          box.innerText += `${icons[type]} ${text}\n`;
-      }
-
       const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
       const DB_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWtzbXltdmZrcWFjcW1iaG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDU1NDksImV4cCI6MjA1NjgyMTU0OX0.tOL_jshVClenI7_7RjC8wSoL7tQ5A_TNGHI"; 
+      
+      if (typeof supabase !== "undefined") {
+          const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
+          
+          function updateNavbarState(user) {
+              const loginBtn = document.getElementById('nav-login-btn');
+              const signupBtn = document.getElementById('nav-signup-btn');
+              const loggedInZone = document.getElementById('nav-logged-in-zone');
+              const emailSpan = document.getElementById('nav-user-email');
+              const creditsSpan = document.getElementById('nav-credits');
 
-      if (typeof supabase === "undefined") {
-          logStatus("Supabase library not found on line 5!", "error");
-          return;
+              if (user) {
+                  // User logged in: hide access buttons, reveal profile dropdown panel
+                  if (loginBtn) loginBtn.style.setProperty('display', 'none', 'important');
+                  if (signupBtn) signupBtn.style.setProperty('display', 'none', 'important');
+                  if (loggedInZone) {
+                      loggedInZone.classList.remove('nav-hidden');
+                      loggedInZone.style.setProperty('display', 'flex', 'important');
+                  }
+                  if (emailSpan) emailSpan.innerText = user.email;
+
+                  // Pull current database user credits
+                  supabaseClient
+                      .from('profiles')
+                      .select('credits')
+                      .eq('id', user.id)
+                      .single()
+                      .then(({ data }) => {
+                          if (data && creditsSpan) {
+                              creditsSpan.innerText = data.credits;
+                          }
+                      }).catch(err => console.error("Profile sync error:", err));
+              } else {
+                  // User logged out: display access buttons, conceal profile panel
+                  if (loginBtn) loginBtn.style.display = '';
+                  if (signupBtn) signupBtn.style.display = '';
+                  if (loggedInZone) {
+                      loggedInZone.classList.add('nav-hidden');
+                      loggedInZone.style.setProperty('display', 'none', 'important');
+                  }
+              }
+          }
+
+          // Initial check execution
+          supabaseClient.auth.getSession().then(({ data }) => {
+              updateNavbarState(data?.session?.user || null);
+          }).catch(() => updateNavbarState(null));
+
+          // Continuous live auth state listener
+          supabaseClient.auth.onAuthStateChange((event, session) => {
+              updateNavbarState(session?.user || null);
+          });
+
+          // Sign out controller
+          window.executeNavbarSignOut = async function() {
+              await supabaseClient.auth.signOut();
+              window.location.reload();
+          };
       }
-
-      logStatus("Supabase engine successfully initialized.");
-      const client = supabase.createClient(DB_URL, DB_KEY);
-
-      // 1. Scan the HTML for the required element IDs
-      logStatus("Scanning HTML element IDs...");
-      const elements = ['nav-login-btn', 'nav-signup-btn', 'nav-logged-in-zone', 'nav-user-email', 'nav-credits'];
-      elements.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-              logStatus(`ID found: "${id}"`, "success");
-          } else {
-              logStatus(`ID MISSING: "${id}"`, "warning");
-          }
-      });
-
-      // 2. Scan the browser local storage for existing session keys
-      logStatus("Checking browser session storage...");
-      let foundLocalKey = false;
-      for (let i = 0; i < localStorage.length; i++) {
-          if (localStorage.key(i).includes('supabase.auth.token')) {
-              foundLocalKey = true;
-              logStatus("Found local session token inside browser storage.", "success");
-          }
-      }
-      if (!foundLocalKey) {
-          logStatus("No Supabase token found in local storage.", "warning");
-      }
-
-      // 3. Connect to Supabase Auth Engine to read the current state
-      client.auth.getSession().then(({ data, error }) => {
-          if (error) {
-              logStatus(`Auth Error: ${error.message}`, "error");
-              return;
-          }
-
-          if (data && data.session) {
-              logStatus(`USER SESSION ACTIVE! (${data.session.user.email})`, "success");
-              box.style.border = '2px solid #27ae60';
-          } else {
-              logStatus("No active user session detected by this project key.", "error");
-              box.style.border = '2px solid #e74c3c';
-          }
-      }).catch(err => {
-          logStatus(`Fatal Connection Check Crash: ${err.message}`, "error");
-      });
   })();
 </script>
 <div class="page">
