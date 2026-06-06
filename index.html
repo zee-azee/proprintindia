@@ -1095,7 +1095,143 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
           </li>
 
             <li><a href="#pricing" class="nav-link">Pricing</a></li>
-            <li><a href="#" class="nav-link">Portfolio</a></li>
+            <li class="nav-portfolio-container">
+            <a href="#" class="nav-link portfolio-trigger" onclick="return false;">
+              Portfolio <span class="portfolio-chevron">▾</span>
+            </a>
+            
+            <div class="portfolio-dropdown-menu">
+              <a href="#portfolio-posters" class="portfolio-item">
+                <div class="portfolio-icon-wrapper port-posters">🖼️</div>
+                <div class="portfolio-item-content">
+                  <span class="port-title">Posters & Banners</span>
+                  <span class="port-desc">See crisp, large-format vector conversions</span>
+                </div>
+              </a>
+
+              <a href="#portfolio-portraits" class="portfolio-item">
+                <div class="portfolio-icon-wrapper port-portraits">📸</div>
+                <div class="portfolio-item-content">
+                  <span class="port-title">Enhanced Portraits</span>
+                  <span class="port-desc">Before & after facial restorations</span>
+                </div>
+              </a>
+
+              <a href="#portfolio-vintage" class="portfolio-item">
+                <div class="portfolio-icon-wrapper port-vintage">⏳</div>
+                <div class="portfolio-item-content">
+                  <span class="port-title">Vintage Restorations</span>
+                  <span class="port-desc">Saved family archives & antique prints</span>
+                </div>
+              </a>
+            </div>
+
+            <style>
+              .nav-portfolio-container {
+                position: relative !important;
+                display: inline-flex !important;
+                align-items: center !important;
+              }
+              
+              .portfolio-chevron {
+                font-size: 0.7rem !important;
+                margin-left: 5px !important;
+                transition: transform 0.2s ease !important;
+              }
+
+              /* Hide menu completely by default */
+              .portfolio-dropdown-menu {
+                position: absolute !important;
+                top: 100% !important;
+                left: 50% !important;
+                transform: translateX(-50%) translateY(15px) !important;
+                width: 290px !important;
+                background: #0f172a !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 14px !important;
+                padding: 10px !important;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                z-index: 99999 !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+              }
+
+              /* Smooth Dropdown Reveal on Hover */
+              .nav-portfolio-container:hover .portfolio-dropdown-menu {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: translateX(-50%) translateY(5px) !important;
+              }
+
+              .nav-portfolio-container:hover .portfolio-chevron {
+                transform: rotate(180deg) !important;
+                color: #6366f1 !important;
+              }
+
+              /* Premium Dark Mode Anchor Reset */
+              .portfolio-dropdown-menu a.portfolio-item {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+                text-decoration: none !important;
+                background: transparent !important;
+                color: #ffffff !important;
+                text-align: left !important;
+                transition: background 0.15s ease !important;
+              }
+
+              .portfolio-dropdown-menu a.portfolio-item:hover {
+                background: rgba(255, 255, 255, 0.05) !important;
+              }
+
+              /* Tinted Color Icon Badges */
+              .portfolio-dropdown-menu .portfolio-icon-wrapper {
+                width: 34px !important;
+                height: 34px !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1rem !important;
+                flex-shrink: 0 !important;
+              }
+
+              .portfolio-dropdown-menu .port-posters   { background: rgba(59, 130, 246, 0.2) !important; }
+              .portfolio-dropdown-menu .port-portraits  { background: rgba(236, 72, 153, 0.2) !important; }
+              .portfolio-dropdown-menu .port-vintage    { background: rgba(234, 179, 8, 0.2) !important; }
+
+              /* Text Styling Elements */
+              .portfolio-dropdown-menu .portfolio-item-content {
+                display: flex !important;
+                flex-direction: column !important;
+              }
+
+              .portfolio-dropdown-menu .port-title {
+                color: #f8fafc !important;
+                font-size: 0.88rem !important;
+                font-weight: 600 !important;
+                line-height: 1.2 !important;
+                text-decoration: none !important;
+              }
+
+              .portfolio-dropdown-menu .port-desc {
+                color: #94a3b8 !important;
+                font-size: 0.75rem !important;
+                margin-top: 2px !important;
+                text-decoration: none !important;
+              }
+
+              .portfolio-dropdown-menu a.portfolio-item:hover .port-title {
+                color: #6366f1 !important;
+              }
+            </style>
+          </li>
             <li><a href="#" class="nav-link">Contact</a></li>
         </ul>
 
