@@ -949,7 +949,48 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
         <!-- Middle Links -->
         <ul class="nav-menu">
             <li><a href="#" class="nav-link">Home</a></li>
-            <li><a href="#" class="nav-link">Services</a></li>
+           <li class="nav-dropdown-container">
+            <a href="#" class="nav-link services-trigger" onclick="return false;">
+              Services <span class="dropdown-chevron">▾</span>
+            </a>
+            
+            <div class="services-dropdown-menu">
+              <div class="dropdown-caret"></div>
+              
+              <a href="#large-canvas" onclick="switchPreview(document.querySelector('.tool-card:nth-child(1)'), 'upscaler')" class="dropdown-item">
+                <div class="dropdown-icon-wrapper op-upscale">🚀</div>
+                <div class="dropdown-item-content">
+                  <span class="item-title">AI Image Upscaler</span>
+                  <span class="item-desc">Cleanly blow up resolutions up to 4x</span>
+                </div>
+              </a>
+
+              <a href="#large-canvas" onclick="switchPreview(document.querySelector('.tool-card:nth-child(2)'), 'sharpener')" class="dropdown-item">
+                <div class="dropdown-icon-wrapper op-sharp">✨</div>
+                <div class="dropdown-item-content">
+                  <span class="item-title">AI Sharpener</span>
+                  <span class="item-desc">De-blur and fix out-of-focus details</span>
+                </div>
+              </a>
+
+              <a href="#large-canvas" onclick="switchPreview(document.querySelector('.tool-card:nth-child(3)'), 'face-enhancer')" class="dropdown-item">
+                <div class="dropdown-icon-wrapper op-face">👤</div>
+                <div class="dropdown-item-content">
+                  <span class="item-title">Face Enhancer</span>
+                  <span class="item-desc">Sharpen features and portraits</span>
+                </div>
+              </a>
+
+              <a href="#large-canvas" onclick="switchPreview(document.querySelector('.tool-card:nth-child(4)'), 'restorer')" class="dropdown-item">
+                <div class="dropdown-icon-wrapper op-restore">⏳</div>
+                <div class="dropdown-item-content">
+                  <span class="item-title">Photo Restorer</span>
+                  <span class="item-desc">Remove scratches from vintage prints</span>
+                </div>
+              </a>
+
+            </div>
+          </li>
             <li><a href="#pricing" class="nav-link">Pricing</a></li>
             <li><a href="#" class="nav-link">Portfolio</a></li>
             <li><a href="#" class="nav-link">Contact</a></li>
