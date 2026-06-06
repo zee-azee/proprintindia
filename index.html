@@ -949,14 +949,12 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
         <!-- Middle Links -->
         <ul class="nav-menu">
             <li><a href="#" class="nav-link">Home</a></li>
-           <li class="nav-dropdown-container">
+        <li class="nav-dropdown-container">
             <a href="#" class="nav-link services-trigger" onclick="return false;">
               Services <span class="dropdown-chevron">▾</span>
             </a>
             
             <div class="services-dropdown-menu">
-              <div class="dropdown-caret"></div>
-              
               <a href="#large-canvas" onclick="switchPreview(document.querySelector('.tool-card:nth-child(1)'), 'upscaler')" class="dropdown-item">
                 <div class="dropdown-icon-wrapper op-upscale">🚀</div>
                 <div class="dropdown-item-content">
@@ -969,7 +967,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
                 <div class="dropdown-icon-wrapper op-sharp">✨</div>
                 <div class="dropdown-item-content">
                   <span class="item-title">AI Sharpener</span>
-                  <span class="item-desc">De-blur and fix out-of-focus details</span>
+                  <span class="item-desc">De-blur and fix focus issues</span>
                 </div>
               </a>
 
@@ -985,12 +983,117 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
                 <div class="dropdown-icon-wrapper op-restore">⏳</div>
                 <div class="dropdown-item-content">
                   <span class="item-title">Photo Restorer</span>
-                  <span class="item-desc">Remove scratches from vintage prints</span>
+                  <span class="item-desc">Fix scratches on vintage prints</span>
                 </div>
               </a>
-
             </div>
+
+            <style>
+              .nav-dropdown-container {
+                position: relative !important;
+                display: inline-flex !important;
+                align-items: center !important;
+              }
+              
+              .dropdown-chevron {
+                font-size: 0.7rem !important;
+                margin-left: 5px !important;
+                transition: transform 0.2s ease !important;
+              }
+
+              /* Hide menu safely by default */
+              .services-dropdown-menu {
+                position: absolute !important;
+                top: 100% !important;
+                left: 50% !important;
+                transform: translateX(-50%) translateY(15px) !important;
+                width: 300px !important;
+                background: #0f172a !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 14px !important;
+                padding: 10px !important;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                z-index: 99999 !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+              }
+
+              /* Reveal Panel on Hover */
+              .nav-dropdown-container:hover .services-dropdown-menu {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: translateX(-50%) translateY(5px) !important;
+              }
+
+              .nav-dropdown-container:hover .dropdown-chevron {
+                transform: rotate(180deg) !important;
+                color: #6366f1 !important;
+              }
+
+              /* Force Premium Dark-Mode Colors and strip native blue highlights */
+              .services-dropdown-menu a.dropdown-item {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+                text-decoration: none !important;
+                background: transparent !important;
+                color: #ffffff !important;
+                text-align: left !important;
+                transition: background 0.15s ease !important;
+              }
+
+              .services-dropdown-menu a.dropdown-item:hover {
+                background: rgba(255, 255, 255, 0.05) !important;
+              }
+
+              .services-dropdown-menu .dropdown-icon-wrapper {
+                width: 34px !important;
+                height: 34px !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1rem !important;
+                flex-shrink: 0 !important;
+              }
+
+              .services-dropdown-menu .op-upscale { background: rgba(99, 102, 241, 0.2) !important; }
+              .services-dropdown-menu .op-sharp   { background: rgba(234, 179, 8, 0.2) !important; }
+              .services-dropdown-menu .op-face    { background: rgba(34, 197, 94, 0.2) !important; }
+              .services-dropdown-menu .op-restore { background: rgba(168, 85, 247, 0.2) !important; }
+
+              .services-dropdown-menu .dropdown-item-content {
+                display: flex !important;
+                flex-direction: column !important;
+              }
+
+              .services-dropdown-menu .item-title {
+                color: #f8fafc !important;
+                font-size: 0.88rem !important;
+                font-weight: 600 !important;
+                line-height: 1.2 !important;
+                text-decoration: none !important;
+              }
+
+              .services-dropdown-menu .item-desc {
+                color: #94a3b8 !important;
+                font-size: 0.75rem !important;
+                margin-top: 2px !important;
+                text-decoration: none !important;
+              }
+
+              .services-dropdown-menu a.dropdown-item:hover .item-title {
+                color: #6366f1 !important;
+              }
+            </style>
           </li>
+
             <li><a href="#pricing" class="nav-link">Pricing</a></li>
             <li><a href="#" class="nav-link">Portfolio</a></li>
             <li><a href="#" class="nav-link">Contact</a></li>
