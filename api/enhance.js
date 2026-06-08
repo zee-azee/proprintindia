@@ -1,84 +1,104 @@
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize the secure admin Supabase client using Vercel Environment Variables
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
-  // Allow CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
+  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // 1. REMOVED apiKey from req.body to prevent the frontend from needing to send it
-    const { image, scale } = req.body;
+    const { image, scale, userId } = req.body;
 
-    // 2. GRAB the key securely from Vercel's backend environment variables instead
-    const secureApiKey = process.env.REPLICATE_API_TOKEN;
-
-    if (!image) {
-      return res.status(400).json({ error: 'Missing image data' });
-    }
-    
-    if (!secureApiKey) {
-      return res.status(500).json({ error: 'Server configuration error: Replicate API token missing on backend.' });
+    // 1. Check if a valid userId was provided by the frontend dashboard
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required. Please log in again.' });
     }
 
-    // Call Replicate API from server side — no CORS issues
-    const response = await fetch('https://api.replicate.com/v1/predictions', {
+    // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE
+    const { data: profile, error: fetchError } = await supabase
+      .from('profiles') // Adjust this if your table is named 'users' instead of 'profiles'
+      .select('credits')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !profile) {
+      return res.status(404).json({ error: 'User profile or credit balance not found.' });
+    }
+
+    // 3. THE CREDIT GUARD: Block them immediately if they are out of credits
+    if (profile.credits <= 0) {
+      return res.status(403).json({ error: 'Insufficient balance. You have 0 credits.' });
+    }
+
+    // 4. VALIDATE REPLICATE TOKEN AVAILABILITY
+    if (!process.env.REPLICATE_API_TOKEN) {
+      return res.status(500).json({ error: 'Server configuration error: Missing API Token.' });
+    }
+
+    // 5. RUN YOUR ACTIVE REPLICATE AI UPSCALER ENGINE
+    const replicateResponse = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${secureApiKey}`, // Uses the secure backend token
-        'Content-Type': 'application/json',
-        'Prefer': 'wait'
+        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        version: 'd0ee3d708c9b911f122a4ad90046c5d26a0293b99476d697f6bb7f2e251ce2d4',
+        version: "660d9222203be9b95941da991e6013fe3571d1ead7f3cdac3bbbc0ba227571d1", // Real Esrgan/SDXL upscaler string
         input: {
           image: image,
-          scale: scale ? parseInt(scale) : 4,
-          face_enhance: false
+          scale: parseInt(scale) || 2,
+          face_enhance: true
         }
       })
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.detail || 'Replicate API error' });
+    if (!replicateResponse.ok) {
+      const errorData = await replicateResponse.json();
+      return res.status(replicateResponse.status).json({ error: errorData.detail || 'Replicate engine failure' });
     }
 
-    // If still processing, poll for result
-    if (data.status === 'processing' || data.status === 'starting') {
-      let prediction = data;
-      let attempts = 0;
+    const prediction = await replicateResponse.json();
 
-      while (prediction.status !== 'succeeded' && prediction.status !== 'failed' && attempts < 60) {
-        await new Promise(r => setTimeout(r, 2000));
-        attempts++;
+    // 6. POLL REPLICATE UNTIL IMAGE IS READY
+    let finalOutputUrl = null;
+    while (!finalOutputUrl) {
+      const pollResponse = await fetch(prediction.urls.get, {
+        headers: { 'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}` }
+      });
+      const pollData = await pollResponse.json();
 
-        const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-          headers: { 'Authorization': `Token ${secureApiKey}` } // Uses secure backend token
-        });
-
-        prediction = await pollRes.json();
+      if (pollData.status === 'succeeded') {
+        finalOutputUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
+        break;
+      } else if (pollData.status === 'failed' || pollData.status === 'canceled') {
+        return res.status(500).json({ error: 'AI processing task failed on execution.' });
       }
 
-      if (prediction.status === 'failed') {
-        return res.status(500).json({ error: prediction.error || 'Enhancement failed' });
-      }
-
-      return res.status(200).json({ output: prediction.output });
+      // Wait 1.5 seconds before asking again to avoid hitting rate limits
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
-    return res.status(200).json({ output: data.output });
+    // 7. DEDUCT 1 CREDIT FROM SUPABASE UPON SUCCESSFUL UPSCALING
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ credits: profile.credits - 1 })
+      .eq('id', userId);
 
-  } catch (err) {
-    return res.status(500).json({ error: err.message || 'Server error' });
+    if (updateError) {
+      console.error("Database deduction failed:", updateError);
+    }
+
+    // 8. SEND FINAL IMAGE BACK TO FRONTEND
+    return res.status(200).json({ success: true, output: finalOutputUrl });
+
+  } catch (error) {
+    console.error('Backend Processing Error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
