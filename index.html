@@ -1719,14 +1719,23 @@ async function enhance() {
   try {
    const scale = isPro ? 4 : 2;
    setProg(30, 'Processing with AI backend...')
+// Safely get the user ID depending on your Supabase client version
+    let currentUserId = null;
+    if (supabase.auth.getUser) {
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUserId = user?.id;
+    } else if (supabase.auth.user) {
+      currentUserId = supabase.auth.user()?.id;
+    }
 
+    // Call your backend and pass the verified userId
     const res = await fetch('/api/enhance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         image: imgData,
         scale: scale,
-        userId: supabase.auth.session()?.user?.id || supabase.auth.user()?.id
+        userId: currentUserId
       })
     });
 
@@ -1741,13 +1750,20 @@ async function enhance() {
       setProg(Math.min(60 + msgIdx * 3, 92), msgs[msgIdx % msgs.length]);
     }, 3000);
 
-    // 2. Validate the network response
+   // 2. Validate the network response
     if (!res.ok) { 
       clearInterval(msgInterval);
       const e = await res.json(); 
-      throw new Error(e.error || `Error ${res.status}`); 
+      
+      // If backend says 403 (0 credits), display your custom message
+      if (res.status === 403) {
+        showToast('Insufficient balance. Please buy credits!');
+      } else {
+        showToast(e.error || `Error ${res.status}`);
+      }
+      
+      throw new Error(e.error || 'Processing failed');
     }
-
     // 3. Extract the upscaled data response
     const data = await res.json();
     clearInterval(msgInterval);
