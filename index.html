@@ -1758,14 +1758,6 @@ async function enhance() {
       throw new Error('Server returned an empty response.');
     }
 
-    const data = await res.json();
-    clearInterval(msgInterval);
-
-    if (!data.output) throw new Error('Enhancement failed. Please try again.');
-
-    setStep(4); setProg(100, 'Complete!');
-    await sleep(400);
-
     outUrl = Array.isArray(data.output) ? data.output[0] : data.output;
     showResult(outUrl);
 
