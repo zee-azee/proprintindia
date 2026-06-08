@@ -1720,12 +1720,13 @@ async function enhance() {
    const scale = isPro ? 4 : 2;
    setProg(30, 'Processing with AI backend...')
 
-   const res = await fetch('/api/enhance', {
+    const res = await fetch('/api/enhance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         image: imgData,
-        scale: scale
+        scale: scale,
+        userId: supabase.auth.session()?.user?.id || supabase.auth.user()?.id
       })
     });
 
