@@ -15,17 +15,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, scale, apiKey } = req.body;
+    // 1. REMOVED apiKey from req.body to prevent the frontend from needing to send it
+    const { image, scale } = req.body;
 
-    if (!image || !apiKey) {
-      return res.status(400).json({ error: 'Missing image or API key' });
+    // 2. GRAB the key securely from Vercel's backend environment variables instead
+    const secureApiKey = process.env.REPLICATE_API_TOKEN;
+
+    if (!image) {
+      return res.status(400).json({ error: 'Missing image data' });
+    }
+    
+    if (!secureApiKey) {
+      return res.status(500).json({ error: 'Server configuration error: Replicate API token missing on backend.' });
     }
 
     // Call Replicate API from server side — no CORS issues
     const response = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${apiKey}`,
+        'Authorization': `Token ${secureApiKey}`, // Uses the secure backend token
         'Content-Type': 'application/json',
         'Prefer': 'wait'
       },
@@ -33,7 +41,7 @@ export default async function handler(req, res) {
         version: 'd0ee3d708c9b911f122a4ad90046c5d26a0293b99476d697f6bb7f2e251ce2d4',
         input: {
           image: image,
-          scale: scale || 4,
+          scale: scale ? parseInt(scale) : 4,
           face_enhance: false
         }
       })
@@ -55,7 +63,7 @@ export default async function handler(req, res) {
         attempts++;
 
         const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-          headers: { 'Authorization': `Token ${apiKey}` }
+          headers: { 'Authorization': `Token ${secureApiKey}` } // Uses secure backend token
         });
 
         prediction = await pollRes.json();
