@@ -1717,35 +1717,46 @@ async function enhance() {
   setStep(1); setProg(10, 'Uploading...');
 
   try {
-    setStep(2); setProg(25, 'Sending to AI...');
+   const scale = isPro ? 4 : 2;
+   setProg(30, 'Processing with AI backend...')
 
-    // Call our own API route — solves CORS
-    const scale = isPro ? 4 : 2;
-
-    const res = await fetch('/api/enhance', {
+   const res = await fetch('/api/enhance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         image: imgData,
-        scale: scale,
-        apiKey: apiKey<-- REMOVED completely
+        scale: scale
       })
     });
 
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || `Error ${res.status}`); }
-
-    setStep(3); setProg(60, isPro ? 'Deep enhancement in progress...' : 'Enhancing your image...');
-
-    // Animate progress while waiting for backend
-    const msgs = isPro
+   // 1. Instantly start the dynamic loader text cycle while fetch runs
+    let msgIdx = 0;
+    const msgs = isPro 
       ? ['Analysing fine details...', 'Enhancing distant objects...', 'Sharpening textures...', 'Finalising output...']
       : ['Upscaling resolution...', 'Sharpening edges...', 'Almost done...'];
 
-    let msgIdx = 0;
     const msgInterval = setInterval(() => {
       msgIdx++;
       setProg(Math.min(60 + msgIdx * 3, 92), msgs[msgIdx % msgs.length]);
     }, 3000);
+
+    // 2. Validate the network response
+    if (!res.ok) { 
+      clearInterval(msgInterval);
+      const e = await res.json(); 
+      throw new Error(e.error || `Error ${res.status}`); 
+    }
+
+    // 3. Extract the upscaled data response
+    const data = await res.json();
+    clearInterval(msgInterval);
+
+    if (data.output) {
+      setProg(100, 'Done!');
+      showResult(data.output);
+    } else {
+      throw new Error('Server returned an empty response.');
+    }
 
     const data = await res.json();
     clearInterval(msgInterval);
