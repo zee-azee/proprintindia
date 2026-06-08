@@ -1416,16 +1416,6 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
 
   <!-- STEP 1 -->
   <div class="card">
-    <div class="card-head"><div class="step-circle">1</div> Your Replicate API key</div>
-    <div class="api-row">
-      <input class="api-input" type="password" id="apiKey" placeholder="r8_xxxxxxxxxxxxxxxx">
-      <button class="btn-save" id="saveBtn" onclick="saveKey()">Save</button>
-    </div>
-    <div class="api-hint">Get it free at <a href="https://replicate.com" target="_blank">replicate.com</a> → Account → API Tokens. Saved in your browser only.</div>
-  </div>
-
-  <!-- STEP 2 -->
-  <div class="card">
     <div class="card-head"><div class="step-circle">2</div> Choose enhancement type</div>
     <div class="model-grid">
       <div class="model-opt sel-crisp" id="optC" onclick="pickModel('crisp')">
@@ -1712,7 +1702,6 @@ function doFile(f) {
 
 async function enhance() {
   if (!imgData) { showToast('Upload an image first'); return; }
-  if (!apiKey) { showToast('Save your API key first'); return; }
   hideErr();
   document.getElementById('resCard').classList.remove('show');
 
@@ -1731,7 +1720,7 @@ async function enhance() {
     setStep(2); setProg(25, 'Sending to AI...');
 
     // Call our own API route — solves CORS
-    const scale = isPro ? 8 : 4;
+    const scale = isPro ? 4 : 2;
 
     const res = await fetch('/api/enhance', {
       method: 'POST',
@@ -1739,7 +1728,7 @@ async function enhance() {
       body: JSON.stringify({
         image: imgData,
         scale: scale,
-        apiKey: apiKey
+        apiKey: apiKey<-- REMOVED completely
       })
     });
 
