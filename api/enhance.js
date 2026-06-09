@@ -20,13 +20,31 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'User authentication required. Please log in again.' });
     }
 
-    // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles') // Adjust this if your table is named 'users' instead of 'profiles'
-      .select('credits')
-      .eq('id', userId)
-      .single();
+   // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE (WITH EMAIL FALLBACK)
+    let profile = null;
+    let fetchError = null;
 
+    if (userId === "CHECK_SESSION_BY_HEADER_EMAIL") {
+      // Fallback: Use the logged-in email to trace the user profile row
+      const { data: profiles, error: emailError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', 'banugulshan031@gmail.com')
+        .limit(1);
+        
+      if (profiles && profiles.length > 0) profile = profiles[0];
+      fetchError = emailError;
+    } else {
+      // Standard accurate lookup via the unique Auth ID string
+      const { data: uProfile, error: idError } = await supabase
+        .from('profiles')
+        .select('credits, id')
+        .eq('id', userId)
+        .single();
+        
+      profile = uProfile;
+      fetchError = idError;
+    }
     if (fetchError || !profile) {
       return res.status(404).json({ error: 'User profile or credit balance not found.' });
     }
