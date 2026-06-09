@@ -1719,16 +1719,38 @@ async function enhance() {
   try {
    const scale = isPro ? 4 : 2;
    setProg(30, 'Processing with AI backend...')
-// Safely get the user ID depending on your Supabase client version
+// 1. Fail-safe method to grab the user ID without crashing the app
     let currentUserId = null;
-    if (supabase.auth.getUser) {
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUserId = user?.id;
-    } else if (supabase.auth.user) {
-      currentUserId = supabase.auth.user()?.id;
+    
+    try {
+      if (typeof supabase !== 'undefined' && supabase && supabase.auth) {
+        if (supabase.auth.getUser) {
+          const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: {} }));
+          currentUserId = authData?.user?.id;
+        } else if (supabase.auth.user) {
+          currentUserId = supabase.auth.user()?.id;
+        }
+      }
+      
+      // Fallback: Check if your template uses a global user variable
+      if (!currentUserId && typeof user !== 'undefined' && user) {
+        currentUserId = user.id;
+      } else if (!currentUserId && typeof currentUser !== 'undefined' && currentUser) {
+        currentUserId = currentUser.id;
+      }
+    } catch (authErr) {
+      console.warn("Auth check bypassed:", authErr);
     }
 
-    // Call your backend and pass the verified userId
+    // 2. Clear block: If no user ID can be verified, stop execution instantly
+    if (!currentUserId) {
+      showToast('Please log in to your account to enhance images.');
+      btn.disabled = false;
+      btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
+      if (typeof hideProg === 'function') hideProg();
+      return;
+    }
+
     const res = await fetch('/api/enhance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
