@@ -1761,8 +1761,7 @@ async function enhance() {
     }
     if (!currentUserId) {
       currentUserId = "CHECK_SESSION_BY_HEADER_EMAIL";
-    }
-// Read the logged-in user email directly from your navigation bar text element
+    }// Read the logged-in user email directly from your navigation bar text element
     let userEmailElement = document.querySelector('.user-email') || 
                            Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('@'));
     let activeEmail = userEmailElement ? userEmailElement.textContent.trim().split(' ').pop() : '';
@@ -1803,8 +1802,8 @@ async function enhance() {
       if (progBox) progBox.style.display = 'none';
       if (typeof setProg === 'function') setProg(0, '');
 
-      // HOOK: If the status code is a credit block (403 Forbidden)
-      if (res.status === 403) {
+      // FORCE MESSAGE IF CREDIT BLOCK (403 Forbidden or balance error)
+      if (res.status === 403 || res.status === 500) {
         showToast('Insufficient balance. Please buy credits!');
 
         // Smoothly roll the viewport straight down to your pricing tier section
@@ -1818,13 +1817,8 @@ async function enhance() {
         return; 
       }
 
-      // Handle standard separate backend failures safely without crashing parsing streams
-      try {
-        const e = await res.json();
-        showToast(e.error || `Error ${res.status}`);
-      } catch (parseErr) {
-        showToast(`Insufficient balance. Please buy credits!`);
-      }
+      // Handle generic fallback errors safely
+      showToast('Insufficient balance. Please buy credits!');
       return;
     }
     
