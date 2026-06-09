@@ -1807,7 +1807,6 @@ async function enhance() {
                               document.querySelector('.processing-container') ||
                               Array.from(document.querySelectorAll('div')).find(el => el.textContent.includes('Processing...'));
         if (progContainer) {
-          // If your element uses a helper class to show up, remove it or force hide it
           progContainer.classList.remove('show');
           progContainer.style.display = 'none';
         }
@@ -1836,7 +1835,7 @@ async function enhance() {
         const e = await res.json();
         showToast(e.error || `Error ${res.status}`);
       } catch (parseErr) {
-        showToast(`Insufficient balance. Please buy credits!`);
+        showToast('Insufficient balance. Please buy credits!');
       }
       return;
     }
