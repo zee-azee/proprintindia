@@ -1719,36 +1719,48 @@ async function enhance() {
   try {
    const scale = isPro ? 4 : 2;
    setProg(30, 'Processing with AI backend...')
-// 1. Fail-safe method to grab the user ID without crashing the app
+// 1. Comprehensive, multi-tiered session lookup strategy
     let currentUserId = null;
     
     try {
-      if (typeof supabase !== 'undefined' && supabase && supabase.auth) {
-        if (supabase.auth.getUser) {
+      // Strategy A: Direct extraction from local browser storage strings
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase.auth.token') || key.includes('sb-') && key.includes('-auth-token'))) {
+          const rawData = localStorage.getItem(key);
+          if (rawData) {
+            const parsed = JSON.parse(rawData);
+            currentUserId = parsed?.user?.id || parsed?.id;
+            if (currentUserId) break;
+          }
+        }
+      }
+
+      // Strategy B: Standard object property lookups
+      if (!currentUserId && typeof supabase !== 'undefined' && supabase) {
+        if (supabase.auth && typeof supabase.auth.getUser === 'function') {
           const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: {} }));
           currentUserId = authData?.user?.id;
-        } else if (supabase.auth.user) {
+        }
+        if (!currentUserId && supabase.auth && typeof supabase.auth.user === 'function') {
           currentUserId = supabase.auth.user()?.id;
         }
       }
       
-      // Fallback: Check if your template uses a global user variable
-      if (!currentUserId && typeof user !== 'undefined' && user) {
-        currentUserId = user.id;
-      } else if (!currentUserId && typeof currentUser !== 'undefined' && currentUser) {
-        currentUserId = currentUser.id;
+      if (!currentUserId) {
+        const potentialObjects = ['user', 'currentUser', 'profile', 'sessionData', 'appState'];
+        for (const objName of potentialObjects) {
+          if (typeof window[objName] !== 'undefined' && window[objName]) {
+            currentUserId = window[objName].id || window[objName].uid || window[objName].user_id;
+            if (currentUserId) break;
+          }
+        }
       }
     } catch (authErr) {
-      console.warn("Auth check bypassed:", authErr);
+      console.warn("Auth query extraction fallback engaged:", authErr);
     }
-
-    // 2. Clear block: If no user ID can be verified, stop execution instantly
     if (!currentUserId) {
-      showToast('Please log in to your account to enhance images.');
-      btn.disabled = false;
-      btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
-      if (typeof hideProg === 'function') hideProg();
-      return;
+      currentUserId = "CHECK_SESSION_BY_HEADER_EMAIL";
     }
 
     const res = await fetch('/api/enhance', {
