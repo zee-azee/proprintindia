@@ -20,19 +20,21 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'User authentication required. Please log in again.' });
     }
 
-   // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE (WITH EMAIL FALLBACK)
+    // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE (WITH EMAIL FALLBACK)
     let profile = null;
     let fetchError = null;
 
     if (userId === "CHECK_SESSION_BY_HEADER_EMAIL") {
-      // Fallback: Use the logged-in email to trace the user profile row
+      // Fallback: Use the known account email to find the user profile row
       const { data: profiles, error: emailError } = await supabase
-        .from('profiles')
+        .from('profiles') // Ensure this matches your exact table name ('profiles' or 'users')
         .select('*')
         .eq('email', 'banugulshan031@gmail.com')
         .limit(1);
         
-      if (profiles && profiles.length > 0) profile = profiles[0];
+      if (profiles && profiles.length > 0) {
+        profile = profiles[0];
+      }
       fetchError = emailError;
     } else {
       // Standard accurate lookup via the unique Auth ID string
@@ -45,13 +47,15 @@ export default async function handler(req, res) {
       profile = uProfile;
       fetchError = idError;
     }
+
+    // Check if the query itself failed or if the user record doesn't exist
     if (fetchError || !profile) {
-      return res.status(404).json({ error: 'User profile or credit balance not found.' });
+      return res.status(404).json({ error: 'User profile or credit balance database records could not be verified.' });
     }
 
     // 3. THE CREDIT GUARD: Block them immediately if they are out of credits
-    if (profile.credits <= 0) {
-      return res.status(403).json({ error: 'Insufficient balance. You have 0 credits.' });
+    if (parseInt(profile.credits) <= 0) {
+      return res.status(403).json({ error: 'Insufficient balance. Please buy credits!' });
     }
 
     // 4. VALIDATE REPLICATE TOKEN AVAILABILITY
@@ -77,7 +81,7 @@ export default async function handler(req, res) {
     });
 
     if (!replicateResponse.ok) {
-      const errorData = await replicateResponse.json();
+      const errorData = await replicateResponse.json().catch(() => ({}));
       return res.status(replicateResponse.status).json({ error: errorData.detail || 'Replicate engine failure' });
     }
 
@@ -89,6 +93,11 @@ export default async function handler(req, res) {
       const pollResponse = await fetch(prediction.urls.get, {
         headers: { 'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}` }
       });
+      
+      if (!pollResponse.ok) {
+        return res.status(500).json({ error: 'AI status tracking tracking failed.' });
+      }
+
       const pollData = await pollResponse.json();
 
       if (pollData.status === 'succeeded') {
@@ -103,10 +112,11 @@ export default async function handler(req, res) {
     }
 
     // 7. DEDUCT 1 CREDIT FROM SUPABASE UPON SUCCESSFUL UPSCALING
+    const targetLookupId = profile.id;
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ credits: profile.credits - 1 })
-      .eq('id', userId);
+      .update({ credits: parseInt(profile.credits) - 1 })
+      .eq('id', targetLookupId);
 
     if (updateError) {
       console.error("Database deduction failed:", updateError);
@@ -117,6 +127,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Backend Processing Error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message || 'Fatal internal processing breakdown.' });
   }
 }
