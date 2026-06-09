@@ -1766,18 +1766,6 @@ async function enhance() {
     let userEmailElement = document.querySelector('.user-email') || 
                            Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('@'));
     let activeEmail = userEmailElement ? userEmailElement.textContent.trim().split(' ').pop() : '';
-// Read the logged-in user email directly from your navigation bar text element
-    let userEmailElement = document.querySelector('.user-email') || 
-                           Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('@'));
-    let activeEmail = userEmailElement ? userEmailElement.textContent.trim().split(' ').pop() : '';
-
-    // SAFE GUARD: If the website cannot find any user session or email layout on screen, stop them instantly
-    if (!currentUserId && !activeEmail) {
-       showToast("Your login session expired. Please log out and sign back in.");
-       btn.disabled = false;
-       btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
-       return;
-    }
 
     // Call your backend and pass all verified tokens securely
     const res = await fetch('/api/enhance', {
@@ -1786,7 +1774,7 @@ async function enhance() {
       body: JSON.stringify({
         image: imgData,
         scale: scale,
-        userId: currentUserId || "CHECK_SESSION_BY_HEADER_EMAIL",
+        userId: currentUserId,
         email: activeEmail
       })
     });
@@ -1808,7 +1796,7 @@ async function enhance() {
 
       // Revert the enhancement button instantly so it doesn't stay frozen spinning
       btn.disabled = false;
-      btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
+      btn.innerHTML = isPro ? '🖼 Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
       
       // Hide the loader container elements cleanly
       const progBox = document.getElementById('progressBox') || document.querySelector('.processing-container');
@@ -1839,35 +1827,7 @@ async function enhance() {
       }
       return;
     }
-
-        // 2. Revert the enhancement button instantly so it doesn't stay frozen
-        btn.disabled = false;
-        btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
-        
-        // 3. Clear the processing progress bar containers 
-        if (typeof setProg === 'function') setProg(0, '');
-        const progBox = document.getElementById('progressBox') || document.querySelector('.processing-container');
-        if (progBox) progBox.style.display = 'none';
-
-        // 4. AUTO-SCROLL TO PRICING: Smoothly move viewport to pricing grid header
-        const pricingSection = document.getElementById('pricing') || document.querySelector('.pricing');
-        if (pricingSection) {
-          pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          // Alternative approach: Find your "Buy once, use forever" header element text matching the screen layout
-          const heading = Array.from(document.querySelectorAll('h2, h3, div')).find(el => el.textContent.includes('Buy once, use forever'));
-          if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        return; // Exit cleanly without breaking browser console routines
-      }
-
-      // Handle standard separate backend exceptions
-      showToast(e.error || `Error ${res.status}`);
-      btn.disabled = false;
-      btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
-      return;
-    }
+    
     // 3. Extract the upscaled data response
     const data = await res.json();
     clearInterval(msgInterval);
