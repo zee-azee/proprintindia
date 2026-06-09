@@ -1784,19 +1784,42 @@ async function enhance() {
       setProg(Math.min(60 + msgIdx * 3, 92), msgs[msgIdx % msgs.length]);
     }, 3000);
 
-   // 2. Validate the network response
-    if (!res.ok) { 
-      clearInterval(msgInterval);
-      const e = await res.json(); 
+ if (!res.ok) { 
+      if (typeof msgInterval !== 'undefined') clearInterval(msgInterval);
       
-      // If backend says 403 (0 credits), display your custom message
+      const e = await res.json().catch(() => ({ error: 'Communication error' })); 
+      
       if (res.status === 403) {
+        // 1. Show the user your exact requested message alert
         showToast('Insufficient balance. Please buy credits!');
-      } else {
-        showToast(e.error || `Error ${res.status}`);
+
+        // 2. Revert the enhancement button instantly so it doesn't stay frozen
+        btn.disabled = false;
+        btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
+        
+        // 3. Clear the processing progress bar containers 
+        if (typeof setProg === 'function') setProg(0, '');
+        const progBox = document.getElementById('progressBox') || document.querySelector('.processing-container');
+        if (progBox) progBox.style.display = 'none';
+
+        // 4. AUTO-SCROLL TO PRICING: Smoothly move viewport to pricing grid header
+        const pricingSection = document.getElementById('pricing') || document.querySelector('.pricing');
+        if (pricingSection) {
+          pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          // Alternative approach: Find your "Buy once, use forever" header element text matching the screen layout
+          const heading = Array.from(document.querySelectorAll('h2, h3, div')).find(el => el.textContent.includes('Buy once, use forever'));
+          if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        return; // Exit cleanly without breaking browser console routines
       }
-      
-      throw new Error(e.error || 'Processing failed');
+
+      // Handle standard separate backend exceptions
+      showToast(e.error || `Error ${res.status}`);
+      btn.disabled = false;
+      btn.innerHTML = isPro ? '⚡ Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
+      return;
     }
     // 3. Extract the upscaled data response
     const data = await res.json();
