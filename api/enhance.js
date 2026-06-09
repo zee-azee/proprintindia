@@ -13,31 +13,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, scale, userId } = req.body;
+    const { image, scale, userId, email } = req.body;
 
-    // 1. Check if a valid userId was provided by the frontend dashboard
+    // 1. Check if user identification keys are present
     if (!userId) {
-      return res.status(401).json({ error: 'User authentication required. Please log in again.' });
+      return res.status(401).json({ error: 'User authentication required.' });
     }
 
-    // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE (WITH EMAIL FALLBACK)
+    // 2. QUERY SUPABASE FOR THE USER'S CREDIT BALANCE
     let profile = null;
     let fetchError = null;
 
-    if (userId === "CHECK_SESSION_BY_HEADER_EMAIL") {
-      // Fallback: Use the known account email to find the user profile row
+    if (userId === "CHECK_SESSION_BY_HEADER_EMAIL" && email) {
+      const cleanEmail = email.replace(/[\(\)\s]/g, '').toLowerCase();
+      
       const { data: profiles, error: emailError } = await supabase
-        .from('profiles') // Ensure this matches your exact table name ('profiles' or 'users')
+        .from('profiles') 
         .select('*')
-        .eq('email', 'banugulshan031@gmail.com')
+        .ilike('email', cleanEmail)
         .limit(1);
         
-      if (profiles && profiles.length > 0) {
-        profile = profiles[0];
-      }
+      if (profiles && profiles.length > 0) profile = profiles[0];
       fetchError = emailError;
     } else {
-      // Standard accurate lookup via the unique Auth ID string
       const { data: uProfile, error: idError } = await supabase
         .from('profiles')
         .select('credits, id')
@@ -48,14 +46,15 @@ export default async function handler(req, res) {
       fetchError = idError;
     }
 
-    // Check if the query itself failed or if the user record doesn't exist
+    // Fallback: Prevent a 500 crash if profile is missing
     if (fetchError || !profile) {
-      return res.status(404).json({ error: 'User profile or credit balance database records could not be verified.' });
+      return res.status(403).json({ error: 'Insufficient balance' });
     }
 
-    // 3. THE CREDIT GUARD: Block them immediately if they are out of credits
-    if (parseInt(profile.credits) <= 0) {
-      return res.status(403).json({ error: 'Insufficient balance. Please buy credits!' });
+    // 3. THE CREDIT GUARD: Block them immediately if they have 0 credits
+    const currentCredits = parseInt(profile.credits, 10) || 0;
+    if (currentCredits <= 0) {
+      return res.status(403).json({ error: 'Insufficient balance' });
     }
 
     // 4. VALIDATE REPLICATE TOKEN AVAILABILITY
@@ -71,21 +70,27 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        version: "660d9222203be9b95941da991e6013fe3571d1ead7f3cdac3bbbc0ba227571d1", // Real Esrgan/SDXL upscaler string
+        version: "660d9222203be9b95941da991e6013fe3571d1ead7f3cdac3bbbc0ba227571d1", 
         input: {
           image: image,
-          scale: parseInt(scale) || 2,
+          scale: parseInt(scale, 10) || 2,
           face_enhance: true
         }
       })
     });
 
+    // Catch if Replicate rejects the initial request
     if (!replicateResponse.ok) {
       const errorData = await replicateResponse.json().catch(() => ({}));
-      return res.status(replicateResponse.status).json({ error: errorData.detail || 'Replicate engine failure' });
+      return res.status(replicateResponse.status).json({ error: errorData.detail || 'AI Engine initialization failed' });
     }
 
     const prediction = await replicateResponse.json();
+
+    // SAFEGUARD FIXED HERE: Ensure prediction and urls exist before checking prediction.urls.get
+    if (!prediction || !prediction.urls || !prediction.urls.get) {
+      return res.status(500).json({ error: 'Failed to establish tracking route with AI engine.' });
+    }
 
     // 6. POLL REPLICATE UNTIL IMAGE IS READY
     let finalOutputUrl = null;
@@ -95,7 +100,7 @@ export default async function handler(req, res) {
       });
       
       if (!pollResponse.ok) {
-        return res.status(500).json({ error: 'AI status tracking tracking failed.' });
+        return res.status(500).json({ error: 'AI status tracking failed.' });
       }
 
       const pollData = await pollResponse.json();
@@ -115,7 +120,7 @@ export default async function handler(req, res) {
     const targetLookupId = profile.id;
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ credits: parseInt(profile.credits) - 1 })
+      .update({ credits: Math.max(0, currentCredits - 1) })
       .eq('id', targetLookupId);
 
     if (updateError) {
