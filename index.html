@@ -1278,18 +1278,28 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
                   }
                   if (emailSpan) emailSpan.innerText = user.email;
 
-                  // Pull current database user credits
-                  supabaseClient
-                      .from('profiles')
-                      .select('credits')
-                      .eq('id', user.id)
-                      .single()
-                      .then(({ data }) => {
-                          if (data && creditsSpan) {
-                              creditsSpan.innerText = data.credits;
-                          }
-                      }).catch(err => console.error("Profile sync error:", err));
-              } else {
+                // Pull current database user credits using email matching
+    if (user.email) {
+      supabaseClient
+        .from('profiles')
+        .select('credits')
+        .eq('email', user.email)
+        .single()
+        .then(({ data }) => {
+          if (data && creditsSpan) {
+            creditsSpan.innerText = `${data.credits} Credits`;
+          } else if (creditsSpan) {
+            creditsSpan.innerText = "10 Credits";
+          }
+        })
+        .catch(err => {
+          console.error("Profile sync error:", err);
+          if (creditsSpan) creditsSpan.innerText = "10 Credits";
+        });
+    } else if (creditsSpan) {
+      creditsSpan.innerText = "10 Credits";
+    }
+               else {
                   // User logged out: display access buttons, conceal profile panel
                   if (loginBtn) loginBtn.style.display = '';
                   if (signupBtn) signupBtn.style.display = '';
