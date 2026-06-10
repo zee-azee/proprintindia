@@ -120,7 +120,7 @@
 
             if (isSignUpMode) {
                 if (title) title.innerText = "Create an Account";
-                if (subtitle) subtitle.innerText = "Sign up to claim your 3 free trial credits.";
+                if (subtitle) subtitle.innerText = "Sign up to claim your 10 free trial credits.";
                 if (mainBtn) {
                     mainBtn.innerText = "Sign Up";
                     mainBtn.style.background = "#28a745";
@@ -171,7 +171,7 @@ async function executeAuthAction(event) {
             // Your existing Sign Up Logic
             const { data, error } = await _supabase.auth.signUp({ email, password });
             if (error) throw error;
-            displayStatus("Registration successful! Check your email.", "success");
+            displayStatus("Registration successful! ", "success");
         } else {
             // 🔥 Your Login Logic: Wait completely for Supabase to write the local token
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
@@ -211,7 +211,7 @@ async function executeAuthAction(event) {
             }
         }
 
-        if (typeof -supabase !== 'undefined') {
+        if (typeof supabase !== 'undefined') {
             checkActiveSession();
         }
     </script>
