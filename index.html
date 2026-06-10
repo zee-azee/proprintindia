@@ -1798,26 +1798,24 @@ async function enhance() {
       btn.disabled = false;
       btn.innerHTML = isPro ? '🖼 Enhance — Wallpaper Pro' : '⚡ Enhance — Quick Crisp';
       
-      // HIDE PROCESSING CONTAINER IMMEDIATELY ON ERROR
+      // REMOVE PROCESSING CONTAINER INSTANTLY
+      const progContainer = document.getElementById('progressBox') || 
+                            document.getElementById('uploadProgress') || 
+                            document.querySelector('.processing-container') ||
+                            (typeof hideProg === 'function' ? null : 'fallback');
+      
       if (typeof hideProg === 'function') {
         hideProg();
-      } else {
-        const progContainer = document.getElementById('progressBox') || 
-                              document.getElementById('uploadProgress') || 
-                              document.querySelector('.processing-container') ||
-                              Array.from(document.querySelectorAll('div')).find(el => el.textContent.includes('Processing...'));
-        if (progContainer) {
-          progContainer.classList.remove('show');
-          progContainer.style.display = 'none';
-        }
+      } else if (progContainer && progContainer !== 'fallback') {
+        progContainer.style.display = 'none';
+        progContainer.classList.remove('show');
       }
 
-      // HOOK: If the status code is a credit block (403 Forbidden)
+      // If the status code is a credit block (403 Forbidden or 500 balance fault)
       if (res.status === 403 || res.status === 500) {
-        // Show the alert text clearly on screen
         showToast('Insufficient balance. Please buy credits!');
 
-        // Smoothly roll the viewport straight down to your pricing tier section after a tiny delay
+        // Smoothly roll the viewport straight down to your pricing tier section
         setTimeout(() => {
           const pricingSection = document.getElementById('pricing') || document.querySelector('.pricing');
           if (pricingSection) {
@@ -1826,20 +1824,13 @@ async function enhance() {
             const heading = Array.from(document.querySelectorAll('h2, h3, div')).find(el => el.textContent.includes('Buy once, use forever'));
             if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
-        }, 300);
+        }, 200);
         return; 
       }
 
-      // Handle standard separate backend failures safely without crashing parsing streams
-      try {
-        const e = await res.json();
-        showToast(e.error || `Error ${res.status}`);
-      } catch (parseErr) {
-        showToast('Insufficient balance. Please buy credits!');
-      }
+      showToast('Insufficient balance. Please buy credits!');
       return;
     }
-    
     // 3. Extract the upscaled data response
     const data = await res.json();
     clearInterval(msgInterval);
