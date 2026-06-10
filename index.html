@@ -1277,8 +1277,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
                       loggedInZone.style.setProperty('display', 'flex', 'important');
                   }
                   if (emailSpan) emailSpan.innerText = user.email;
-
-          // Pull current database user credits directly using their email address
+// Pull current database user credits directly using their email address
     supabaseClient
       .from('profiles')
       .select('credits')
@@ -1288,7 +1287,6 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
         if (!profileErr && profileData !== null) {
           if (creditsSpan) creditsSpan.innerText = `${profileData.credits} Credits`;
         } else {
-          // Fallback if the profile record hasn't fully propagated yet
           if (creditsSpan) creditsSpan.innerText = "10 Credits";
         }
       })
