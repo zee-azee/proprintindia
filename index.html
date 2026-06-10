@@ -1278,83 +1278,58 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
                   }
                   if (emailSpan) emailSpan.innerText = user.email;
 
-                // Pull current database user credits using email matching
-    if (user.email) {
-      supabaseClient
-        .from('profiles')
-        .select('credits')
-        .eq('email', user.email)
-        .single()
-        .then(({ data }) => {
-          if (data && creditsSpan) {
-            creditsSpan.innerText = `${data.credits} Credits`;
-          } else if (creditsSpan) {
-            creditsSpan.innerText = "10 Credits";
-          }
-        })
-        .catch(err => {
-          console.error("Profile sync error:", err);
-          if (creditsSpan) creditsSpan.innerText = "10 Credits";
-        });
-    } else if (creditsSpan) {
-      creditsSpan.innerText = "10 Credits";
-    }
-               else {
-                  // User logged out: display access buttons, conceal profile panel
-                  if (loginBtn) loginBtn.style.display = '';
-                  if (signupBtn) signupBtn.style.display = '';
-                  if (loggedInZone) {
-                      loggedInZone.classList.add('nav-hidden');
-                      loggedInZone.style.setProperty('display', 'none', 'important');
-                  }
-              }
-          }
-
-         // 1. Fetch accurate credit counts directly from your profiles data table
-async function syncLiveCredits(userEmail) {
-  if (!userEmail) return;
-  try {
-    const { data, error } = await supabaseClient
+          // Pull current database user credits directly using their email address
+    supabaseClient
       .from('profiles')
       .select('credits')
-      .eq('email', userEmail)
-      .single();
+      .eq('email', user.email)
+      .single()
+      .then(({ data: profileData, error: profileErr }) => {
+        if (!profileErr && profileData !== null) {
+          if (creditsSpan) creditsSpan.innerText = `${profileData.credits} Credits`;
+        } else {
+          // Fallback if the profile record hasn't fully propagated yet
+          if (creditsSpan) creditsSpan.innerText = "10 Credits";
+        }
+      })
+      .catch(err => {
+        console.error("Profile matching sync error:", err);
+        if (creditsSpan) creditsSpan.innerText = "10 Credits";
+      });
 
-    if (!error && data !== null) {
-      const balanceEl = document.querySelector('.available-balance') || 
-                        Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('Available Balance'));
-      if (balanceEl) {
-        balanceEl.innerHTML = `Available Balance: <strong>${data.credits} Credits</strong>`;
-      }
+  } else {
+    // User logged out: display access buttons, conceal profile panel
+    if (loginBtn) loginBtn.style.display = '';
+    if (signupBtn) signupBtn.style.display = '';
+    if (loggedInZone) {
+      loggedInZone.classList.add('nav-hidden');
+      loggedInZone.style.setProperty('display', 'none', 'important');
     }
-  } catch (err) {
-    console.error("Failed to sync credit display:", err);
+    if (emailSpan) emailSpan.innerText = '';
+    if (creditsSpan) creditsSpan.innerText = '0 Credits';
   }
 }
 
-// 2. Initial check execution on page load
-supabaseClient.auth.getSession().then(async ({ data }) => {
-  const user = data?.session?.user || null;
-  updateNavbarState(user);
-  if (user && user.email) {
-    await syncLiveCredits(user.email);
-  }
-}).catch(() => updateNavbarState(null));
+// --- Live Auth Session State Listeners ---
+if (typeof supabaseClient !== 'undefined') {
+  // Initial session snapshot check execution on window load
+  supabaseClient.auth.getSession().then(({ data }) => {
+    updateNavbarState(data?.session?.user || null);
+  }).catch(() => updateNavbarState(null));
 
-// 3. Continuous live auth state listener
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-  const user = session?.user || null;
-  updateNavbarState(user);
-  if (user && user.email) {
-    await syncLiveCredits(user.email);
+  // Continuous live runtime auth state change listener
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    updateNavbarState(session?.user || null);
+  });
+}
+
+// --- Sign Out Controller Action Configuration ---
+window.executeNavbarSignOut = async function() {
+  if (typeof supabaseClient !== 'undefined') {
+    await supabaseClient.auth.signOut();
+    window.location.reload();
   }
-});
-          // Sign out controller
-          window.executeNavbarSignOut = async function() {
-              await supabaseClient.auth.signOut();
-              window.location.reload();
-          };
-      }
+};
   })();
 </script>
 <div class="page">
