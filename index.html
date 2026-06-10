@@ -1300,16 +1300,45 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
               }
           }
 
-          // Initial check execution
-          supabaseClient.auth.getSession().then(({ data }) => {
-              updateNavbarState(data?.session?.user || null);
-          }).catch(() => updateNavbarState(null));
+         // 1. Fetch accurate credit counts directly from your profiles data table
+async function syncLiveCredits(userEmail) {
+  if (!userEmail) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('credits')
+      .eq('email', userEmail)
+      .single();
 
-          // Continuous live auth state listener
-          supabaseClient.auth.onAuthStateChange((event, session) => {
-              updateNavbarState(session?.user || null);
-          });
+    if (!error && data !== null) {
+      const balanceEl = document.querySelector('.available-balance') || 
+                        Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('Available Balance'));
+      if (balanceEl) {
+        balanceEl.innerHTML = `Available Balance: <strong>${data.credits} Credits</strong>`;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to sync credit display:", err);
+  }
+}
 
+// 2. Initial check execution on page load
+supabaseClient.auth.getSession().then(async ({ data }) => {
+  const user = data?.session?.user || null;
+  updateNavbarState(user);
+  if (user && user.email) {
+    await syncLiveCredits(user.email);
+  }
+}).catch(() => updateNavbarState(null));
+
+// 3. Continuous live auth state listener
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  const user = session?.user || null;
+  updateNavbarState(user);
+  if (user && user.email) {
+    await syncLiveCredits(user.email);
+  }
+});
           // Sign out controller
           window.executeNavbarSignOut = async function() {
               await supabaseClient.auth.signOut();
