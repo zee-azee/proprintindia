@@ -1287,14 +1287,14 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
       .single()
       .then(({ data: profileData, error: profileErr }) => {
         if (!profileErr && profileData !== null) {
-          if (creditsSpan) creditsSpan.innerText = `${profileData.credits} Credits`;
+          if (creditsSpan) creditsSpan.innerText = profileData.credits;
         } else {
-          if (creditsSpan) creditsSpan.innerText = "10 Credits";
+          if (creditsSpan) creditsSpan.innerText = "10";
         }
       })
       .catch(err => {
         console.error("Profile matching sync error:", err);
-        if (creditsSpan) creditsSpan.innerText = "10 Credits";
+        if (creditsSpan) creditsSpan.innerText = "10";
       });
 
   } else {
@@ -1306,7 +1306,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
       loggedInZone.style.setProperty('display', 'none', 'important');
     }
     if (emailSpan) emailSpan.innerText = '';
-    if (creditsSpan) creditsSpan.innerText = '0 Credits';
+    if (creditsSpan) creditsSpan.innerText = '0';
   }
 }
 
@@ -1330,7 +1330,6 @@ window.executeNavbarSignOut = async function() {
     window.location.reload();
   }
 };
-  })();
 </script>
 <div class="page">
 
