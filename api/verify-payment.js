@@ -7,8 +7,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
-  export default async function handler(req, res) {
-
+ 
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -25,7 +24,6 @@ const {
   amount,
   userId
 } = req.body;
-```
 const expectedSignature = crypto
   .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
   .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -91,7 +89,6 @@ return res.status(200).json({
   success: true,
   creditsAdded: creditsToAdd
 });
-```
 
 } catch (err) {
 return res.status(500).json({
