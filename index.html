@@ -1280,7 +1280,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
     }
     if (emailSpan) emailSpan.innerText = user.email;
 
-    // Pull current database user credits directly using their email address
+   // Pull current database user credits directly using their email address
     supabaseClient
       .from('profiles')
       .select('credits')
