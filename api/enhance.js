@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-sea';
+import { createClient } from '@supabase/supabase-js';
 
 // Safe initialized fallback check for backend orchestration environments
 const supabaseUrl = process.env.SUPABASE_URL;
