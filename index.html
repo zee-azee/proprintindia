@@ -1256,10 +1256,12 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
 <script>
   (function() {
       const DB_URL = "https://mhqksmymvfkqacqmbhny.supabase.co"; 
-      const DB_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWtzbXltdmZrcWFjcW1iaG55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDU1NDksImV4cCI6MjA1NjgyMTU0OX0.tOL_jshVClenI7_7RjC8wSoL7tQ5A_TNGHI"; 
-      
-      if (typeof supabase !== "undefined") {
-          const supabaseClient = supabase.createClient(DB_URL, DB_KEY);
+      const DB_KEY = "sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6";
+  
+  let supabaseClient;
+
+  if (typeof supabase !== "undefined") {
+      supabaseClient = supabase.createClient(DB_URL, DB_KEY);
           
           function updateNavbarState(user) {
               const loginBtn = document.getElementById('nav-login-btn');
