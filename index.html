@@ -1262,7 +1262,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
 
   if (typeof supabase !== "undefined") {
       supabaseClient = supabase.createClient(DB_URL, DB_KEY);
-          
+      window.supabaseClient = supabaseClient;    
           function updateNavbarState(user) {
               const loginBtn = document.getElementById('nav-login-btn');
               const signupBtn = document.getElementById('nav-signup-btn');
@@ -1779,7 +1779,7 @@ async function enhance() {
   // Get user directly from Supabase session
 const {
   data: { session }
-} = await supabaseClient.auth.getSession();
+} = await window.supabaseClient.auth.getSession();
 
 const activeEmail = session?.user?.email || '';
 currentUserId = session?.user?.id || currentUserId;
