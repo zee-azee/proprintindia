@@ -1965,7 +1965,7 @@ const response = await fetch("/api/create-order", {
     description: "Payment",
     order_id: order.id,
 
-  handler: async function (response) {
+handler: async function (response) {
 
   const {
     data: { session }
@@ -1973,7 +1973,7 @@ const response = await fetch("/api/create-order", {
 
   const userId = session?.user?.id;
 
-  await fetch("/api/verify-payment", {
+  const result = await fetch("/api/verify-payment", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -1987,11 +1987,14 @@ const response = await fetch("/api/create-order", {
     })
   });
 
-  showToast("Credits added successfully!");
+  const data = await result.json();
 
-  setTimeout(() => {
-    location.reload();
-  }, 1500);
+  if (data.success) {
+    showToast(`${data.creditsAdded} credits added!`);
+    setTimeout(() => location.reload(), 1500);
+  } else {
+    showToast("Credit update failed");
+  }
 },
 
     theme: {
