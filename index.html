@@ -1777,8 +1777,12 @@ async function enhance() {
    // Read the logged-in user email directly from your navigation bar text element
     let userEmailElement = document.querySelector('.user-email') || 
                            Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('@'));
-    let activeEmail = userEmailElement ? userEmailElement.textContent.trim().split(' ').pop() : '';
+   const {
+  data: { session }
+} = await supabaseClient.auth.getSession();
 
+const activeEmail = session?.user?.email || '';
+const currentUserId = session?.user?.id || '';
     // Call your backend and pass all verified tokens securely
     const res = await fetch('/api/enhance', {
       method: 'POST',
@@ -1791,7 +1795,7 @@ async function enhance() {
       })
     });
 
-    // 1. Instantly start the dynamic loader text cycle while fetch runs
+    // 1. Instantly start the dynamic loader text cycle while fetch rs
     let msgIdx = 0;
     const msgs = isPro 
       ? ['Analysing fine details...', 'Enhancing distant objects...', 'Sharpening textures...']
