@@ -1774,15 +1774,16 @@ async function enhance() {
     if (!currentUserId) {
       currentUserId = "CHECK_SESSION_BY_HEADER_EMAIL";
     }
-   // Read the logged-in user email directly from your navigation bar text element
-    let userEmailElement = document.querySelector('.user-email') || 
-                           Array.from(document.querySelectorAll('div, span, p')).find(el => el.textContent.includes('@'));
-   const {
+  // Get user directly from Supabase session
+const {
   data: { session }
 } = await supabaseClient.auth.getSession();
 
 const activeEmail = session?.user?.email || '';
-const currentUserId = session?.user?.id || '';
+currentUserId = session?.user?.id || currentUserId;
+
+console.log("EMAIL:", activeEmail);
+console.log("USER ID:", currentUserId);
     // Call your backend and pass all verified tokens securely
     const res = await fetch('/api/enhance', {
       method: 'POST',
