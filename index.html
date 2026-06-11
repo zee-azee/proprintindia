@@ -2008,14 +2008,24 @@ const response = await fetch("/api/create-order", {
                   }
                   if (emailSpan) emailSpan.innerText = user.email;
 
-                  supabaseClient
-                      .from('profiles')
-                      .select('credits')
-                      .eq('id', user.id)
-                      .single()
-                      .then(({ data }) => {
-                          if (data && creditsSpan) creditsSpan.innerText = data.credits;
-                      }).catch(err => console.error(err));
+                 console.log("User object:", user);
+console.log("User ID:", user?.id);
+console.log("User Email:", user?.email);
+
+supabaseClient
+  .from('profiles')
+  .select('credits')
+  .eq('id', user.id)
+  .single()
+  .then(({ data, error }) => {
+      console.log("Profile Data:", data);
+      console.log("Profile Error:", error);
+
+      if (data && creditsSpan) {
+          creditsSpan.innerText = data.credits + " Credits";
+      }
+  })
+  .catch(err => console.error("Catch Error:", err));
               } else {
                   if (loginBtn) loginBtn.style.display = '';
                   if (signupBtn) signupBtn.style.display = '';
