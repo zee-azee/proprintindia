@@ -1263,23 +1263,24 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
   if (typeof supabase !== "undefined") {
       supabaseClient = supabase.createClient(DB_URL, DB_KEY);
       window.supabaseClient = supabaseClient;    
-          function updateNavbarState(user) {
-              const loginBtn = document.getElementById('nav-login-btn');
-              const signupBtn = document.getElementById('nav-signup-btn');
-              const loggedInZone = document.getElementById('nav-logged-in-zone');
-              const emailSpan = document.getElementById('nav-user-email');
-              const creditsSpan = document.getElementById('nav-credits');
+         function updateNavbarState(user) {
+  const loginBtn = document.getElementById('nav-login-btn');
+  const signupBtn = document.getElementById('nav-signup-btn');
+  const loggedInZone = document.getElementById('nav-logged-in-zone');
+  const emailSpan = document.getElementById('nav-user-email');
+  const creditsSpan = document.getElementById('nav-credits');
 
-              if (user) {
-                  // User logged in: hide access buttons, reveal profile dropdown panel
-                  if (loginBtn) loginBtn.style.setProperty('display', 'none', 'important');
-                  if (signupBtn) signupBtn.style.setProperty('display', 'none', 'important');
-                  if (loggedInZone) {
-                      loggedInZone.classList.remove('nav-hidden');
-                      loggedInZone.style.setProperty('display', 'flex', 'important');
-                  }
-                  if (emailSpan) emailSpan.innerText = user.email;
-// Pull current database user credits directly using their email address
+  if (user) {
+    // User logged in: hide access buttons, reveal profile dropdown panel
+    if (loginBtn) loginBtn.style.setProperty('display', 'none', 'important');
+    if (signupBtn) signupBtn.style.setProperty('display', 'none', 'important');
+    if (loggedInZone) {
+      loggedInZone.classList.remove('nav-hidden');
+      loggedInZone.style.setProperty('display', 'flex', 'important');
+    }
+    if (emailSpan) emailSpan.innerText = user.email;
+
+    // Pull current database user credits directly using their email address
     supabaseClient
       .from('profiles')
       .select('credits')
@@ -1309,7 +1310,7 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
     if (creditsSpan) creditsSpan.innerText = '0';
   }
 }
-  }
+
 // --- Live Auth Session State Listeners ---
 if (typeof supabaseClient !== 'undefined') {
   // Initial session snapshot check execution on window load
@@ -1330,7 +1331,6 @@ window.executeNavbarSignOut = async function() {
     window.location.reload();
   }
 };
-   })();
 </script>
 <div class="page">
 
@@ -2082,3 +2082,4 @@ supabaseClient
 </script>
 </body>
 </html>
+
