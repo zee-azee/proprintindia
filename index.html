@@ -1965,13 +1965,33 @@ const response = await fetch("/api/create-order", {
     description: "Payment",
     order_id: order.id,
 
-   handler: function (response) {
-  showToast("Payment successful!");
-  console.log(response);
+  handler: async function (response) {
+
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  const userId = session?.user?.id;
+
+  await fetch("/api/verify-payment", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_signature: response.razorpay_signature,
+      amount: amount,
+      userId: userId
+    })
+  });
+
+  showToast("Credits added successfully!");
 
   setTimeout(() => {
-    window.location.href = "#uploadZone";
-  }, 1200);
+    location.reload();
+  }, 1500);
 },
 
     theme: {
