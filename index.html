@@ -1750,16 +1750,13 @@ async function enhance() {
         }
       }
 
-      // Strategy B: Standard object property lookups
-      if (!currentUserId && typeof supabase !== 'undefined' && supabase) {
-        if (supabase.auth && typeof supabase.auth.getUser === 'function') {
-          const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: {} }));
-          currentUserId = authData?.user?.id;
-        }
-        if (!currentUserId && supabase.auth && typeof supabase.auth.user === 'function') {
-          currentUserId = supabase.auth.user()?.id;
-        }
-      }
+    if (!currentUserId && window.supabaseClient?.auth) {
+    const {
+        data: { session }
+    } = await window.supabaseClient.auth.getSession();
+
+    currentUserId = session?.user?.id || currentUserId;
+}
       
       if (!currentUserId) {
         const potentialObjects = ['user', 'currentUser', 'profile', 'sessionData', 'appState'];
