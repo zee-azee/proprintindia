@@ -1848,20 +1848,37 @@ console.log("USER ID:", currentUserId);
       showToast('Insufficient balance. Please buy credits!');
       return;
     }
-    // 3. Extract the upscaled data response
+ // 3. Extract prediction ID and poll for result
     const data = await res.json();
     clearInterval(msgInterval);
 
-    if (data.output) {
-      setProg(100, 'Done!');
-      showResult(data.output);
-    } else {
-      throw new Error('Server returned an empty response.');
-    }
+    if (!data.predictionId) throw new Error('No prediction ID returned.');
 
-    outUrl = Array.isArray(data.output) ? data.output[0] : data.output;
-    showResult(outUrl);
+    // Poll /api/poll every 3 seconds until done
+    await new Promise((resolve, reject) => {
+      const pollInterval = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/poll?id=${data.predictionId}`);
+          const pollData = await pollRes.json();
 
+          if (pollData.status === 'succeeded') {
+            clearInterval(pollInterval);
+            outUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
+            setProg(100, 'Done!');
+            showResult(outUrl);
+            resolve();
+          } else if (pollData.status === 'failed') {
+            clearInterval(pollInterval);
+            reject(new Error('Enhancement failed on server.'));
+          } else {
+            setProg(Math.min(60 + msgIdx * 3, 92), 'Enhancing...');
+          }
+        } catch (pollErr) {
+          clearInterval(pollInterval);
+          reject(pollErr);
+        }
+      }, 3000);
+    });
   } catch (err) {
     hideProg();
     showErr(err.message);
