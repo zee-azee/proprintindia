@@ -6,9 +6,8 @@ const replicateToken = process.env.REPLICATE_API_TOKEN;
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed.' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { image, userId, scale = 2 } = req.body || {};
@@ -16,12 +15,9 @@ export default async function handler(req, res) {
     if (!image) return res.status(400).json({ error: 'No image provided.' });
     if (!userId) return res.status(400).json({ error: 'No userId provided.' });
 
-    // Check credits
+    // Check and deduct credits
     const { data: profile, error: dbError } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
-      .single();
+      .from('profiles').select('credits').eq('id', userId).single();
 
     if (dbError || !profile) return res.status(404).json({ error: 'Profile not found.' });
 
@@ -30,16 +26,10 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Insufficient balance. Please buy credits!' });
     }
 
-    // Deduct credit
-    const updatedBalance = currentBalance - 1;
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ credits: updatedBalance })
-      .eq('id', userId);
+    await supabase.from('profiles')
+      .update({ credits: currentBalance - 1 }).eq('id', userId);
 
-    if (updateError) throw new Error(updateError.message);
-
-    // Send to Replicate for real upscaling
+    // Start Replicate job — don't wait for it
     const startRes = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -48,43 +38,19 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         version: 'dfad41707589d68ecdccd1dfa600d55a208f9310748e44bfe35b4a6291453d5e',
-        input: {
-          image: image,
-          scale: scale
-        }
+        input: { image, scale }
       })
     });
 
     const prediction = await startRes.json();
 
-    if (!prediction?.id) {
-      throw new Error('Replicate did not return a prediction ID.');
-    }
+    if (!prediction?.id) throw new Error('Replicate did not return a prediction ID.');
 
-    // Poll for result (max 60 seconds)
-    let result = null;
-    for (let i = 0; i < 20; i++) {
-      await new Promise(r => setTimeout(r, 3000));
-      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-        headers: { 'Authorization': `Token ${replicateToken}` }
-      });
-      const pollData = await pollRes.json();
-
-      if (pollData.status === 'succeeded') {
-        result = pollData.output;
-        break;
-      }
-      if (pollData.status === 'failed') {
-        throw new Error('Replicate enhancement failed.');
-      }
-    }
-
-    if (!result) throw new Error('Enhancement timed out.');
-
+    // Return prediction ID immediately — frontend will poll
     return res.status(200).json({
       success: true,
-      remainingCredits: updatedBalance,
-      enhancedImage: result
+      predictionId: prediction.id,
+      remainingCredits: currentBalance - 1
     });
 
   } catch (err) {
