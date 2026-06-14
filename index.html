@@ -930,6 +930,14 @@ box-shadow: 0 20px 60px rgba(0,0,0,.45);
         grid-template-columns:1fr !important;
     }
 }
+  .demo-sl-wrap { position: relative; width: 100%; max-width: 600px; margin: 0 auto; border-radius: 12px; overflow: hidden; cursor: ew-resize; user-select: none; aspect-ratio: 3/4; }
+.demo-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.demo-after { clip-path: inset(0 0 0 50%); filter: brightness(1.08) contrast(1.08) saturate(1.15) sharpen(1); }
+.demo-sl-line { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: #fff; z-index: 10; pointer-events: none; }
+.demo-sl-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 44px; height: 44px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 12px rgba(0,0,0,.3); font-size: 18px; color: #555; pointer-events: none; font-weight: 500; }
+.demo-lbl { position: absolute; bottom: 12px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; background: rgba(0,0,0,.55); color: #fff; padding: 4px 10px; border-radius: 4px; z-index: 12; }
+.demo-lbl.b { left: 12px; }
+.demo-lbl.a { right: 12px; }
 </style>
 </head>
 <body>
@@ -1387,24 +1395,16 @@ window.executeNavbarSignOut = async function() {
       </div>
 
     </div>
-
-    <div class="preview-images">
-
-      <div class="preview-box">
-        <label>Before</label>
-
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600">
-      </div>
-
-      <div class="preview-box">
-        <label class="after">After AI Upscale</label>
-
-        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600">
-      </div>
-
-    </div>
-
+<div class="preview-images">
+  <div class="demo-sl-wrap" id="demoWrap">
+    <img class="demo-img" src="https://raw.githubusercontent.com/zee-azee/proprintindia/main/1337-def17308-681c-11f1-8f73-f2dd84800b70.png" alt="Before">
+    <img class="demo-img demo-after" id="demoAfterImg" src="https://raw.githubusercontent.com/zee-azee/proprintindia/main/1337-def17308-681c-11f1-8f73-f2dd84800b70.png" alt="After">
+    <div class="demo-sl-line" id="demoLine"></div>
+    <div class="demo-sl-handle" id="demoHandle">&#8249;&#8250;</div>
+    <div class="demo-lbl b">Before</div>
+    <div class="demo-lbl a">After</div>
   </div>
+</div>
 
 </section>
 
@@ -2097,6 +2097,21 @@ supabaseClient
           };
       }
   })();
+  const demoWrap = document.getElementById('demoWrap');
+let demoDragging = false;
+function moveDemoSl(clientX) {
+  const rect = demoWrap.getBoundingClientRect();
+  let pct = Math.min(Math.max((clientX - rect.left) / rect.width * 100, 2), 98);
+  document.getElementById('demoAfterImg').style.clipPath = `inset(0 0 0 ${pct}%)`;
+  document.getElementById('demoLine').style.left = pct + '%';
+  document.getElementById('demoHandle').style.left = pct + '%';
+}
+demoWrap.addEventListener('mousedown', e => { demoDragging = true; moveDemoSl(e.clientX); });
+document.addEventListener('mousemove', e => { if (demoDragging) moveDemoSl(e.clientX); });
+document.addEventListener('mouseup', () => demoDragging = false);
+demoWrap.addEventListener('touchstart', e => { demoDragging = true; moveDemoSl(e.touches[0].clientX); }, {passive:true});
+document.addEventListener('touchmove', e => { if (demoDragging) moveDemoSl(e.touches[0].clientX); }, {passive:true});
+document.addEventListener('touchend', () => demoDragging = false);
 </script>
 </body>
 </html>
