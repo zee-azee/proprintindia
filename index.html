@@ -7,7 +7,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fraunces:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -1525,7 +1525,158 @@ window.executeNavbarSignOut = async function() {
     </div>
     <button class="btn-another" onclick="resetAll()">Enhance another image</button>
   </div>
+<!-- FEATURES SECTION -->
+<section style="background:#0d1117; width:100vw; margin-left:calc(-50vw + 50%); padding:60px 0; margin-bottom:60px;">
 
+  <!-- Section Header -->
+  <div style="text-align:center; margin-bottom:56px; padding:0 24px;">
+    <span style="background:rgba(245,200,66,0.1); border:0.5px solid rgba(245,200,66,0.3); color:#f5c842; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; padding:4px 14px; border-radius:20px;">Our Tools</span>
+    <h2 style="color:#fff; font-size:26px; font-weight:600; margin:16px 0 10px; font-family:'Inter',sans-serif;">Everything you need for perfect prints</h2>
+    <p style="color:rgba(255,255,255,0.45); font-size:14px; max-width:480px; margin:0 auto; line-height:1.7;">Professional-grade AI tools that transform your images into stunning, print-ready artwork.</p>
+  </div>
+
+  <!-- Feature 1: AI Upscaler — image LEFT, text RIGHT -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; background:#111620; margin-bottom:2px;">
+    <div style="display:flex; align-items:center; justify-content:center; min-height:260px; padding:40px;">
+      <div style="width:100%; max-width:280px; aspect-ratio:4/3; background:#1a2035; border-radius:10px; border:0.5px solid rgba(255,255,255,0.08); position:relative; overflow:hidden;">
+        <div style="display:flex; width:100%; height:100%;">
+          <div style="flex:1; background:#1e2a40; display:flex; align-items:center; justify-content:center;">
+            <span style="color:rgba(255,255,255,0.2); font-size:11px;">72 DPI</span>
+          </div>
+          <div style="width:1px; background:#f5c842; opacity:0.6;"></div>
+          <div style="flex:1; background:#1a3a5c; display:flex; align-items:center; justify-content:center;">
+            <span style="color:rgba(255,255,255,0.5); font-size:11px;">300 DPI</span>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(245,200,66,0.15); border:0.5px solid rgba(245,200,66,0.4); border-radius:20px; padding:3px 10px;">
+          <span style="color:#f5c842; font-size:10px; font-weight:500;">4× Upscale</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:48px 48px 48px 24px; display:flex; flex-direction:column; justify-content:center;">
+      <div style="width:44px; height:44px; border-radius:10px; background:rgba(245,200,66,0.1); border:0.5px solid rgba(245,200,66,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+        <i class="ti ti-maximize" style="font-size:22px; color:#f5c842;"></i>
+      </div>
+      <h3 style="color:#fff; font-size:22px; font-weight:600; margin:0 0 12px; font-family:'Inter',sans-serif;">AI Upscaler</h3>
+      <p style="color:rgba(255,255,255,0.5); font-size:14px; line-height:1.8; margin:0 0 24px;">Enlarge your images up to 4× without losing sharpness or detail. Perfect for printing large-format banners, posters, and wallpapers at full resolution.</p>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#f5c842; font-size:14px;"></i> Up to 4× resolution</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#f5c842; font-size:14px;"></i> Print-ready output</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#f5c842; font-size:14px;"></i> No blurring</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 2: Sharpener — text LEFT, image RIGHT -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; background:#0d1117; margin-bottom:2px;">
+    <div style="padding:48px 24px 48px 48px; display:flex; flex-direction:column; justify-content:center;">
+      <div style="width:44px; height:44px; border-radius:10px; background:rgba(100,180,255,0.1); border:0.5px solid rgba(100,180,255,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+        <i class="ti ti-adjustments" style="font-size:22px; color:#64b4ff;"></i>
+      </div>
+      <h3 style="color:#fff; font-size:22px; font-weight:600; margin:0 0 12px; font-family:'Inter',sans-serif;">Image Sharpener</h3>
+      <p style="color:rgba(255,255,255,0.5); font-size:14px; line-height:1.8; margin:0 0 24px;">Fix blurry, out-of-focus, or motion-affected photos with AI-powered edge detection and detail recovery that brings crisp clarity to every pixel.</p>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#64b4ff; font-size:14px;"></i> Remove blur</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#64b4ff; font-size:14px;"></i> Edge enhancement</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#64b4ff; font-size:14px;"></i> Detail recovery</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; min-height:260px; padding:40px;">
+      <div style="width:100%; max-width:280px; aspect-ratio:4/3; background:#1a2035; border-radius:10px; border:0.5px solid rgba(255,255,255,0.08); position:relative; overflow:hidden;">
+        <div style="display:flex; width:100%; height:100%;">
+          <div style="flex:1; background:#1a2035; display:flex; align-items:center; justify-content:center;">
+            <div style="width:60px; height:60px; border-radius:50%; background:rgba(100,180,255,0.08); border:3px solid rgba(100,180,255,0.15); filter:blur(2px);"></div>
+          </div>
+          <div style="width:1px; background:#64b4ff; opacity:0.6;"></div>
+          <div style="flex:1; background:#1a2a3a; display:flex; align-items:center; justify-content:center;">
+            <div style="width:60px; height:60px; border-radius:50%; background:rgba(100,180,255,0.15); border:3px solid rgba(100,180,255,0.6);"></div>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(100,180,255,0.12); border:0.5px solid rgba(100,180,255,0.4); border-radius:20px; padding:3px 10px;">
+          <span style="color:#64b4ff; font-size:10px; font-weight:500;">Sharp &amp; Clear</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3: Old Photo Restorer — image LEFT, text RIGHT -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; background:#111620; margin-bottom:2px;">
+    <div style="display:flex; align-items:center; justify-content:center; min-height:260px; padding:40px;">
+      <div style="width:100%; max-width:280px; aspect-ratio:4/3; background:#1a2035; border-radius:10px; border:0.5px solid rgba(255,255,255,0.08); position:relative; overflow:hidden;">
+        <div style="display:flex; width:100%; height:100%;">
+          <div style="flex:1; background:#2a2010; display:flex; align-items:center; justify-content:center;">
+            <i class="ti ti-photo-off" style="font-size:28px; color:rgba(255,255,255,0.15);"></i>
+          </div>
+          <div style="width:1px; background:#c9a84c; opacity:0.7;"></div>
+          <div style="flex:1; background:#1a2a1a; display:flex; align-items:center; justify-content:center;">
+            <i class="ti ti-photo" style="font-size:28px; color:rgba(180,255,180,0.4);"></i>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(201,168,76,0.12); border:0.5px solid rgba(201,168,76,0.4); border-radius:20px; padding:3px 10px; white-space:nowrap;">
+          <span style="color:#c9a84c; font-size:10px; font-weight:500;">Restored</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:48px 48px 48px 24px; display:flex; flex-direction:column; justify-content:center;">
+      <div style="width:44px; height:44px; border-radius:10px; background:rgba(201,168,76,0.1); border:0.5px solid rgba(201,168,76,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+        <i class="ti ti-history" style="font-size:22px; color:#c9a84c;"></i>
+      </div>
+      <h3 style="color:#fff; font-size:22px; font-weight:600; margin:0 0 12px; font-family:'Inter',sans-serif;">Old Photo Restorer</h3>
+      <p style="color:rgba(255,255,255,0.5); font-size:14px; line-height:1.8; margin:0 0 24px;">Bring damaged, faded, or scratched old photographs back to life. Our AI removes noise, repairs tears, and restores true-to-life color for archival-quality prints.</p>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#c9a84c; font-size:14px;"></i> Scratch removal</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#c9a84c; font-size:14px;"></i> Color restoration</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#c9a84c; font-size:14px;"></i> Noise reduction</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 4: Face Enhancer — text LEFT, image RIGHT -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; background:#0d1117;">
+    <div style="padding:48px 24px 48px 48px; display:flex; flex-direction:column; justify-content:center;">
+      <div style="width:44px; height:44px; border-radius:10px; background:rgba(180,100,255,0.1); border:0.5px solid rgba(180,100,255,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+        <i class="ti ti-user-circle" style="font-size:22px; color:#b464ff;"></i>
+      </div>
+      <h3 style="color:#fff; font-size:22px; font-weight:600; margin:0 0 12px; font-family:'Inter',sans-serif;">Face Enhancer</h3>
+      <p style="color:rgba(255,255,255,0.5); font-size:14px; line-height:1.8; margin:0 0 24px;">Automatically detect and enhance facial features with AI precision. Ideal for portraits, ID photos, wedding albums, and professional headshots meant for print.</p>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#b464ff; font-size:14px;"></i> Auto face detection</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#b464ff; font-size:14px;"></i> Skin smoothing</span>
+        <span style="color:rgba(255,255,255,0.35); font-size:12px; display:flex; align-items:center; gap:5px;"><i class="ti ti-check" style="color:#b464ff; font-size:14px;"></i> Portrait-ready</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; min-height:260px; padding:40px;">
+      <div style="width:100%; max-width:280px; aspect-ratio:4/3; background:#1a2035; border-radius:10px; border:0.5px solid rgba(255,255,255,0.08); position:relative; overflow:hidden;">
+        <div style="display:flex; width:100%; height:100%;">
+          <div style="flex:1; background:#1e1a2a; display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(180,100,255,0.1); border:2px solid rgba(180,100,255,0.2); margin:0 auto 6px; filter:blur(1px);"></div>
+              <div style="width:50px; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; margin:0 auto;"></div>
+            </div>
+          </div>
+          <div style="width:1px; background:#b464ff; opacity:0.6;"></div>
+          <div style="flex:1; background:#1e1a30; display:flex; align-items:center; justify-content:center;">
+            <div style="text-align:center;">
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(180,100,255,0.25); border:2px solid rgba(180,100,255,0.7); margin:0 auto 6px;"></div>
+              <div style="width:50px; height:6px; background:rgba(180,100,255,0.3); border-radius:3px; margin:0 auto;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(180,100,255,0.12); border:0.5px solid rgba(180,100,255,0.4); border-radius:20px; padding:3px 10px; white-space:nowrap;">
+          <span style="color:#b464ff; font-size:10px; font-weight:500;">Face Enhanced</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div style="text-align:center; padding:48px 24px 0;">
+    <button onclick="document.getElementById('fileInput').click()" style="background:#f5c842; color:#0d1117; border:none; padding:13px 32px; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer;">Try All Tools Free →</button>
+    <p style="color:rgba(255,255,255,0.25); font-size:12px; margin:12px 0 0;">No credit card required · 3 free enhancements on signup</p>
+  </div>
+
+</section>
+<!-- END FEATURES SECTION -->
   <!-- PRICING -->
   <div class="pricing-wrap" id="pricing">
     <div class="sec-label">Pricing</div>
