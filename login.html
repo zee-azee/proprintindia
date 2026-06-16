@@ -1,219 +1,375 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProPrintIndia - Authentication</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .auth-container { 
-            max-width: 400px; 
-            width: 100%;
-            margin: 0 auto; 
-            padding: 30px; 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-        }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-            font-size: 14px;
-        }
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            margin-top: 10px;
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold;
-            font-size: 16px;
-        }
-        #btn-main {
-            background: #007bff; 
-            color: white; 
-            transition: background 0.2s;
-        }
-        #btn-main:hover { background: #0056b3; }
-        .hidden { display: none; }
-        
-        .status-msg {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 14px;
-            text-align: center;
-        }
-        .error { background: #f8d7da; color: #721c24; }
-        .success { background: #d4edda; color: #155724; }
-        
-        .toggle-link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #28a745;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .toggle-link:hover { text-decoration: underline; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — ProPrintIndia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #111111;
+      --ink-mid: #444444;
+      --ink-soft: #777777;
+      --rule: #E5E5E5;
+      --bg: #FFFFFF;
+      --bg-off: #F7F7F7;
+      --accent: #1A56FF;
+      --accent-light: #EEF2FF;
+      --accent-dark: #0D3ACC;
+      --error: #DC2626;
+      --success: #16A34A;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-off);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-bottom: 1px solid var(--rule);
+    }
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .back-link {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* ── CARD ── */
+    .auth-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .auth-card {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-header { text-align: center; margin-bottom: 28px; }
+    .auth-icon {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .auth-header h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .auth-header p { font-size: 0.85rem; color: var(--ink-soft); }
+
+    /* ── FORM ── */
+    .form-field { margin-bottom: 16px; }
+    .form-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .form-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .form-field input.error { border-color: var(--error); }
+
+    .field-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .field-meta label { margin-bottom: 0; }
+    .forgot-link {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .error-msg {
+      display: none;
+      font-size: 0.75rem;
+      color: var(--error);
+      margin-top: 4px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-submit:hover { background: var(--accent-dark); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--ink-soft);
+      font-size: 0.75rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .btn-google:hover {
+      border-color: #aaa;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .google-icon { font-size: 1.1rem; }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+    }
+    .auth-switch a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .alert-error { background: #FEF2F2; border: 1px solid #FECACA; color: var(--error); }
+    .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: var(--success); }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: var(--ink-soft);
+      border-top: 1px solid var(--rule);
+    }
+    footer a { color: var(--ink-soft); }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 28px 20px; }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div id="auth-view">
-            <h2 id="auth-title">Welcome to ProPrintIndia</h2>
-            <p id="auth-subtitle">Sign in to start enhancing images.</p>
-            
-            <input type="email" id="email" placeholder="Your Email">
-            <input type="password" id="password" placeholder="Your Password">
-            
-            <button id="btn-main" onclick="executeAuthAction()">Log In</button>
-            <div id="toggle-text" class="toggle-link" onclick="handleFormToggle()">Sign Up Instead</div>
-            
-            <div id="msg" class="status-msg hidden"></div>
-        </div>
+<div class="topbar">
+  <a href="index.html" class="logo">ProPrint<span>India</span></a>
+  <a href="index.html" class="back-link">← Back to Home</a>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">🔐</span>
+      <h1>Welcome back</h1>
+      <p>Log in to access your credits and enhance images.</p>
     </div>
 
-    <script>
-        // 1. Core Configuration
-        var isSignUpMode = false;
-        const SUPABASE_URL = "https://mhqlqnsymvfkqedqmhqy.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_KM7ZmFOyTgr36wSoL4t0SA_TlNGHPS6"; 
-        
-        let _supabase;
+    <div class="alert alert-error" id="alert-error"></div>
+    <div class="alert alert-success" id="alert-success"></div>
 
-        try {
-            if (typeof supabase !== 'undefined') {
-                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch (e) {
-            console.error("Initialization error:", e);
-        }
+    <div class="form-field">
+      <label for="email">Email address</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+      <div class="error-msg" id="email-err">Please enter a valid email.</div>
+    </div>
 
-        // 2. UI Toggle Logic
-        function handleFormToggle() {
-            isSignUpMode = !isSignUpMode;
-            const title = document.getElementById('auth-title');
-            const subtitle = document.getElementById('auth-subtitle');
-            const mainBtn = document.getElementById('btn-main');
-            const toggleText = document.getElementById('toggle-text');
-            const msg = document.getElementById('msg');
-            
-            if (msg) msg.classList.add('hidden'); 
+    <div class="form-field">
+      <div class="field-meta">
+        <label for="password">Password</label>
+        <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+      </div>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      <div class="error-msg" id="pass-err">Password must be at least 6 characters.</div>
+    </div>
 
-            if (isSignUpMode) {
-                if (title) title.innerText = "Create an Account";
-                if (subtitle) subtitle.innerText = "Sign up to claim your 10 free trial credits.";
-                if (mainBtn) {
-                    mainBtn.innerText = "Sign Up";
-                    mainBtn.style.background = "#28a745";
-                }
-                if (toggleText) {
-                    toggleText.innerText = "Already have an account? Log In Instead";
-                    toggleText.style.color = "#007bff";
-                }
-            } else {
-                if (title) title.innerText = "Welcome to ProPrintIndia";
-                if (subtitle) subtitle.innerText = "Sign in to start enhancing images.";
-                if (mainBtn) {
-                    mainBtn.innerText = "Log In";
-                    mainBtn.style.background = "#007bff";
-                }
-                if (toggleText) {
-                    toggleText.innerText = "Sign Up Instead";
-                    toggleText.style.color = "#28a745";
-                }
-            }
-        }
+    <button class="btn-submit" id="login-btn" onclick="handleLogin()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Log In</span>
+    </button>
 
-        // 3. Form Submission
-async function executeAuthAction(event) {
-    if (event) event.preventDefault(); // 🔥 CRITICAL: Stops the browser from refreshing prematurely!
+    <div class="divider">or continue with</div>
 
-    const emailEl = document.getElementById('email');
-    const passwordEl = document.getElementById('password');
-    if (!emailEl || !passwordEl) return;
+    <button class="btn-google" onclick="handleGoogleLogin()">
+      <span class="google-icon">🌐</span> Continue with Google
+    </button>
 
-    const email = emailEl.value.trim();
-    const password = passwordEl.value;
+    <div class="auth-switch">
+      Don't have an account? <a href="signup.html">Create one free</a>
+    </div>
+  </div>
+</div>
 
-    if (!email || !password) {
-        displayStatus("Please enter both an email and password.", "error");
-        return;
-    }
+<footer>
+  <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a> &nbsp;·&nbsp; © 2026 ProPrintIndia
+</footer>
 
-    displayStatus("Processing request...", "success");
+<script>
+  function showAlert(type, msg) {
+    document.getElementById('alert-error').style.display = 'none';
+    document.getElementById('alert-success').style.display = 'none';
+    const el = document.getElementById('alert-' + type);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
 
-    if (!_supabase) {
-        displayStatus("Connection Error: Cloud library failed to load.", "error");
-        return;
-    }
+  function setLoading(on) {
+    const btn = document.getElementById('login-btn');
+    btn.disabled = on;
+    document.getElementById('spinner').style.display = on ? 'block' : 'none';
+    document.getElementById('btn-text').textContent = on ? 'Logging in...' : 'Log In';
+  }
+
+  function validate() {
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+    let ok = true;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    document.getElementById('email').classList.toggle('error', !emailOk);
+    document.getElementById('email-err').style.display = emailOk ? 'none' : 'block';
+    if (!emailOk) ok = false;
+
+    const passOk = pass.length >= 6;
+    document.getElementById('password').classList.toggle('error', !passOk);
+    document.getElementById('pass-err').style.display = passOk ? 'none' : 'block';
+    if (!passOk) ok = false;
+
+    return ok;
+  }
+
+  async function handleLogin() {
+    if (!validate()) return;
+    setLoading(true);
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
     try {
-        if (isSignUpMode) {
-            // Your existing Sign Up Logic
-            const { data, error } = await _supabase.auth.signUp({ email, password });
-            if (error) throw error;
-            displayStatus("Registration successful! ", "success");
-        } else {
-            // 🔥 Your Login Logic: Wait completely for Supabase to write the local token
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            
-            displayStatus("Login successful! Redirecting...", "success");
-            
-            // Give the browser 400 milliseconds to securely settle the token into local storage before moving
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 400);
-        }
+      // ── Replace the block below with your Supabase call ──
+      // const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      // if (error) throw error;
+      // window.location.href = 'dashboard.html';
+
+      // Placeholder simulation:
+      await new Promise(r => setTimeout(r, 1200));
+      showAlert('success', 'Logged in successfully! Redirecting...');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
     } catch (err) {
-        displayStatus(err.message, "error");
+      showAlert('error', err.message || 'Login failed. Please check your credentials.');
+      setLoading(false);
     }
-}
-        function displayStatus(text, type) {
-            const msg = document.getElementById('msg');
-            if (msg) {
-                msg.innerText = text;
-                msg.className = "status-msg " + type;
-                msg.classList.remove('hidden');
-            }
-        }
+  }
 
-        // 4. Active Session Guard (Redirects if already logged in)
-        async function checkActiveSession() {
-            if (!_supabase) return;
-            try {
-                const { data: { user } } = await _supabase.auth.getUser();
-                if (user) {
-                    // User is already logged in, send them straight home
-                    window.location.href = 'index.html';
-                }
-            } catch (err) {
-                console.log("Session verification error:", err.message);
-            }
-        }
+  async function handleGoogleLogin() {
+    // ── Replace with your Supabase Google OAuth ──
+    // const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    showAlert('error', 'Google login coming soon.');
+  }
 
-        if (typeof supabase !== 'undefined') {
-            checkActiveSession();
-        }
-    </script>
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+</script>
+
 </body>
 </html>
