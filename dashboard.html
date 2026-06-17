@@ -672,7 +672,7 @@
   const SUPABASE_URL = 'https://mhqlqnsymvfkqedqmhqy.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MDIxODMsImV4cCI6MjA2NTM3ODE4M30.lTaFPXIYrIMFp0g6ytnJ5T6bN3HJb9TjhSrPpjG8EJ8';
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
   let currentCredits = 0;
@@ -684,7 +684,7 @@
 
   // AUTH CHECK
   async function init() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await _supabase.auth.getSession();
     if (!session) {
       window.location.href = 'login.html';
       return;
@@ -713,7 +713,7 @@
 
       if (error) {
         console.warn('Profile fetch error:', error.message);
-        await supabase.from('profiles').upsert({
+        await _supabase.from('profiles').upsert({
           id: currentUser.id,
           email: currentUser.email,
           credits: 10
@@ -826,7 +826,7 @@
 
     // Deduct credits
     currentCredits -= currentToolCost;
-    await supabase.from('profiles').update({ credits: currentCredits }).eq('id', currentUser.id);
+    await _supabase.from('profiles').update({ credits: currentCredits }).eq('id', currentUser.id);
     updateCreditsUI();
 
     // Show result (for now, show same image — replace with enhanced URL from your API)
@@ -885,7 +885,7 @@
 
   // LOGOUT
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await _supabase.auth.signOut();
     window.location.href = 'login.html';
   }
 
