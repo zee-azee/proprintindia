@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ProPrintIndia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #d4500a;
+      --orange-light: #f5e8e1;
+      --orange-dark: #b84308;
+      --bg: #f8f8f6;
+      --surface: #ffffff;
+      --border: #e8e4e0;
+      --text: #1a1a1a;
+      --text-muted: #6b6560;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--orange);
+      text-decoration: none;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .credits-badge {
+      background: var(--orange-light);
+      color: var(--orange);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #f0d4c4;
+    }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-logout:hover { border-color: #c0bab5; color: var(--text); }
+
+    /* MAIN */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
+    }
+
+    .greeting {
+      margin-bottom: 32px;
+    }
+
+    .greeting h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .greeting p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* CREDIT CARD */
+    .credit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .credit-info h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .credit-count {
+      font-family: 'Sora', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--orange);
+      line-height: 1;
+    }
+
+    .credit-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .buy-credits-btn {
+      background: var(--orange);
+      color: white;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .buy-credits-btn:hover { background: var(--orange-dark); }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    /* TOOLS GRID */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 44px;
+    }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .tool-card:hover {
+      border-color: var(--orange);
+      box-shadow: 0 4px 20px rgba(212,80,10,0.10);
+      transform: translateY(-2px);
+    }
+
+    .tool-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--orange-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .tool-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--orange);
+    }
+
+    .tool-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .tool-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .tool-cost {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange);
+      background: var(--orange-light);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* UPLOAD MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none; border: none;
+      font-size: 20px; cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .upload-area:hover { border-color: var(--orange); background: var(--orange-light); }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon { font-size: 36px; margin-bottom: 10px; }
+    .upload-text { font-size: 14px; font-weight: 500; color: var(--text); }
+    .upload-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .preview-img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+      max-height: 200px;
+      object-fit: contain;
+    }
+
+    .btn-enhance {
+      width: 100%;
+      background: var(--orange);
+      color: white;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.15s;
+    }
+    .btn-enhance:hover { background: var(--orange-dark); }
+    .btn-enhance:disabled { background: #ccc; cursor: not-allowed; }
+
+    .enhance-result {
+      margin-top: 16px;
+      display: none;
+    }
+    .enhance-result p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .enhance-result img {
+      width: 100%;
+      border-radius: 8px;
+      max-height: 200px;
+      object-fit: contain;
+    }
+    .btn-download {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-download:hover { background: var(--orange); color: white; }
+
+    /* HISTORY */
+    .history-section { margin-top: 8px; }
+
+    .history-empty {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .history-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .history-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .history-table th {
+      background: var(--bg);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .history-table tr:last-child td { border-bottom: none; }
+
+    .badge-tool {
+      background: var(--orange-light);
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    /* BUY MODAL */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .plan-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .plan-card.popular { border-color: var(--orange); }
+    .plan-card:hover { border-color: var(--orange); }
+
+    .popular-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .plan-credits {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .plan-unit {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .plan-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .upi-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    /* LOADING */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: white;
+      font-size: 14px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .plan-grid { grid-template-columns: 1fr; }
+      .credit-card { flex-direction: column; align-items: flex-start; }
+      .nav-right { gap: 10px; }
+      .user-name { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">ProPrintIndia</a>
+  <div class="nav-right">
+    <a href="index.html" class="btn-logout" style="text-decoration:none;">🏠 Home</a>
+    <span class="credits-badge" id="navCredits">⚡ — credits</span>
+    <div class="nav-user">
+      <div class="avatar" id="userAvatar">?</div>
+      <span class="user-name" id="userName">Loading...</span>
+    </div>
+    <button class="btn-logout" onclick="handleLogout()">Log out</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="greeting">
+    <h1 id="greetingText">Welcome back 👋</h1>
+    <p>Enhance your images for professional print quality.</p>
+  </div>
+
+  <!-- CREDITS -->
+  <div class="credit-card">
+    <div class="credit-info">
+      <h2>Available Credits</h2>
+      <div class="credit-count" id="creditCount">—</div>
+      <div class="credit-label">1 credit = 1 enhancement</div>
+    </div>
+    <button class="buy-credits-btn" onclick="openBuyModal()">Buy More Credits</button>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="section-title">Your Tools</div>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="openTool('Quick Crisp', 'Sharpen and upscale images for sharp, clean print output.', 1)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>
+        </svg>
+      </div>
+      <div class="tool-name">Quick Crisp</div>
+      <div class="tool-desc">Sharpen and upscale images for sharp, clean print output.</div>
+      <span class="tool-cost">1 credit</span>
+    </div>
+
+    <div class="tool-card" onclick="openTool('Face Enhancer', 'Restore clarity and detail to faces in portraits and ID photos.', 2)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </div>
+      <div class="tool-name">Face Enhancer</div>
+      <div class="tool-desc">Restore clarity and detail to faces in portraits and ID photos.</div>
+      <span class="tool-cost">2 credits</span>
+    </div>
+
+    <div class="tool-card" onclick="openTool('Old Photo Restorer', 'Remove scratches and restore faded, damaged old photographs.', 2)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+      </div>
+      <div class="tool-name">Old Photo Restorer</div>
+      <div class="tool-desc">Remove scratches and restore faded, damaged old photographs.</div>
+      <span class="tool-cost">2 credits</span>
+    </div>
+
+    <div class="tool-card" onclick="openTool('Wallpaper Pro', 'Upscale images to high-resolution for large-format wallpaper printing.', 3)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <div class="tool-name">Wallpaper Pro</div>
+      <div class="tool-desc">Upscale images to high-resolution for large-format wallpaper printing.</div>
+      <span class="tool-cost">3 credits</span>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section">
+    <div class="section-title">Enhancement History</div>
+    <div id="historyContainer" class="history-empty">No enhancements yet. Use a tool above to get started.</div>
+  </div>
+</main>
+
+<!-- TOOL MODAL -->
+<div class="modal-overlay" id="toolModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('toolModal')">✕</button>
+    <h3 id="modalToolName">Quick Crisp</h3>
+    <p class="modal-subtitle" id="modalToolDesc"></p>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" accept="image/*" id="fileInput" onchange="handleFile(event)" />
+      <div class="upload-icon">🖼️</div>
+      <div class="upload-text">Click to upload image</div>
+      <div class="upload-hint">JPG, PNG, WEBP · Max 20MB</div>
+    </div>
+    <img id="previewImg" class="preview-img" alt="Preview" />
+    <button class="btn-enhance" id="enhanceBtn" onclick="runEnhancement()" disabled>Enhance Image</button>
+    <div class="enhance-result" id="enhanceResult">
+      <p>✅ Enhancement complete!</p>
+      <img id="resultImg" alt="Enhanced" />
+      <button class="btn-download" id="downloadBtn">Download Enhanced Image</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUY MODAL -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('buyModal')">✕</button>
+    <h3>Buy Credits</h3>
+    <p class="modal-subtitle">Pay once, use anytime. No subscription.</p>
+    <div class="plan-grid">
+      <div class="plan-card" onclick="selectPlan(this, 50, 49)">
+        <div class="plan-credits">50</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹49</div>
+      </div>
+      <div class="plan-card popular" onclick="selectPlan(this, 150, 129)">
+        <div class="popular-label">★ Best Value</div>
+        <div class="plan-credits">150</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹129</div>
+      </div>
+      <div class="plan-card" onclick="selectPlan(this, 500, 399)">
+        <div class="plan-credits">500</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹399</div>
+      </div>
+    </div>
+    <div class="upi-note">Payments via UPI · Razorpay · Instant credit top-up</div>
+    <button class="buy-credits-btn" style="width:100%;margin-top:20px" onclick="proceedToPay()">Pay with UPI</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://mhqlqnsymvfkqedqmhqy.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MDIxODMsImV4cCI6MjA2NTM3ODE4M30.lTaFPXIYrIMFp0g6ytnJ5T6bN3HJb9TjhSrPpjG8EJ8';
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentUser = null;
+  let currentCredits = 0;
+  let currentToolCost = 1;
+  let currentToolName = '';
+  let selectedFile = null;
+  let selectedPlan = null;
+  let history = [];
+
+  // AUTH CHECK
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    currentUser = session.user;
+    setUserUI(currentUser);
+    await loadCredits();
+    loadHistory();
+  }
+
+  function setUserUI(user) {
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+    const initial = name.charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initial;
+    document.getElementById('userName').textContent = name;
+    document.getElementById('greetingText').textContent = `Welcome back, ${name.split(' ')[0]} 👋`;
+  }
+
+  async function loadCredits() {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('credits')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (error) {
+        console.warn('Profile fetch error:', error.message);
+        await supabase.from('profiles').upsert({
+          id: currentUser.id,
+          email: currentUser.email,
+          credits: 10
+        }, { onConflict: 'id' });
+        currentCredits = 10;
+      } else {
+        currentCredits = data?.credits ?? 10;
+      }
+    } catch (e) {
+      console.warn('loadCredits exception:', e);
+      currentCredits = 10;
+    }
+    updateCreditsUI();
+  }
+
+  function updateCreditsUI() {
+    document.getElementById('creditCount').textContent = currentCredits;
+    document.getElementById('navCredits').textContent = `⚡ ${currentCredits} credits`;
+  }
+
+  function loadHistory() {
+    // Load from localStorage as fallback (can be replaced with Supabase table later)
+    const saved = localStorage.getItem(`ppi_history_${currentUser?.id}`);
+    if (saved) {
+      history = JSON.parse(saved);
+      renderHistory();
+    }
+  }
+
+  function saveHistory(entry) {
+    history.unshift(entry);
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem(`ppi_history_${currentUser?.id}`, JSON.stringify(history));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyContainer');
+    if (!history.length) {
+      container.className = 'history-empty';
+      container.innerHTML = 'No enhancements yet. Use a tool above to get started.';
+      return;
+    }
+    container.className = 'history-table';
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>File</th>
+            <th>Date</th>
+            <th>Credits Used</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${history.map(h => `
+            <tr>
+              <td><span class="badge-tool">${h.tool}</span></td>
+              <td>${h.file}</td>
+              <td>${h.date}</td>
+              <td>−${h.cost}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // TOOL MODAL
+  function openTool(name, desc, cost) {
+    currentToolName = name;
+    currentToolCost = cost;
+    selectedFile = null;
+    document.getElementById('modalToolName').textContent = name;
+    document.getElementById('modalToolDesc').textContent = `${desc} · Costs ${cost} credit${cost > 1 ? 's' : ''}`;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('enhanceBtn').disabled = true;
+    document.getElementById('enhanceResult').style.display = 'none';
+    document.getElementById('toolModal').classList.add('open');
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.getElementById('previewImg');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('enhanceBtn').disabled = false;
+  }
+
+  async function runEnhancement() {
+    if (!selectedFile) return;
+    if (currentCredits < currentToolCost) {
+      showToast('Not enough credits. Please buy more.');
+      return;
+    }
+
+    const btn = document.getElementById('enhanceBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Enhancing...';
+
+    // Simulate enhancement (replace with real API call later)
+    await new Promise(r => setTimeout(r, 2500));
+
+    // Deduct credits
+    currentCredits -= currentToolCost;
+    await supabase.from('profiles').update({ credits: currentCredits }).eq('id', currentUser.id);
+    updateCreditsUI();
+
+    // Show result (for now, show same image — replace with enhanced URL from your API)
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const resultImg = document.getElementById('resultImg');
+      resultImg.src = ev.target.result;
+      document.getElementById('enhanceResult').style.display = 'block';
+
+      // Download
+      document.getElementById('downloadBtn').onclick = () => {
+        const a = document.createElement('a');
+        a.href = ev.target.result;
+        a.download = `proprintindia_${currentToolName.replace(/ /g,'_').toLowerCase()}_${selectedFile.name}`;
+        a.click();
+      };
+    };
+    reader.readAsDataURL(selectedFile);
+
+    btn.innerHTML = 'Enhance Image';
+    btn.disabled = false;
+
+    // Save to history
+    saveHistory({
+      tool: currentToolName,
+      file: selectedFile.name,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      cost: currentToolCost
+    });
+
+    showToast('Enhancement complete!');
+  }
+
+  // BUY MODAL
+  function openBuyModal() {
+    selectedPlan = null;
+    document.getElementById('buyModal').classList.add('open');
+  }
+
+  function selectPlan(el, credits, price) {
+    document.querySelectorAll('.plan-card').forEach(c => c.style.borderColor = '');
+    el.style.borderColor = 'var(--orange)';
+    selectedPlan = { credits, price };
+  }
+
+  function proceedToPay() {
+    if (!selectedPlan) { showToast('Please select a plan first.'); return; }
+    showToast(`Redirecting to payment for ₹${selectedPlan.price}...`);
+    // Wire up your payment gateway (Razorpay/UPI) here
+    setTimeout(() => closeModal('buyModal'), 1500);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // LOGOUT
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = 'login.html';
+  }
+
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  init();
+</script>
+</body>
+</html>
