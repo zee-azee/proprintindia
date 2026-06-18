@@ -684,17 +684,32 @@
 
   // AUTH CHECK
   async function init() {
+    // Listen for auth state - catches OAuth redirect sessions
+    _supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && !currentUser) {
+        currentUser = session.user;
+        if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+        setUserUI(currentUser);
+        await loadCredits();
+        loadHistory();
+      }
+    });
+
+    // Also try getSession directly
     const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) {
-      window.location.href = 'login.html';
-      return;
+    if (session) {
+      currentUser = session.user;
+      if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+      setUserUI(currentUser);
+      await loadCredits();
+      loadHistory();
+    } else {
+      // Wait 2 seconds for OAuth hash to be processed before redirecting
+      setTimeout(async () => {
+        const { data: { session: s2 } } = await _supabase.auth.getSession();
+        if (!s2) window.location.href = 'login.html';
+      }, 2000);
     }
-    currentUser = session.user;
-    // Clean up URL hash
-    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
-    setUserUI(currentUser);
-    await loadCredits();
-    loadHistory();
   }
 
   function setUserUI(user) {
