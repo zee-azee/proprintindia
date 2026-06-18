@@ -4,587 +4,919 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — ProPrintIndia</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --ink: #111111; --ink-mid: #444444; --ink-soft: #777777;
-      --rule: #E5E5E5; --bg: #FFFFFF; --bg-off: #F7F7F7;
-      --accent: #1A56FF; --accent-light: #EEF2FF; --accent-dark: #0D3ACC;
-      --success: #16A34A; --warn: #D97706; --error: #DC2626;
-      --radius: 12px; --radius-sm: 8px;
-      --shadow: 0 2px 16px rgba(0,0,0,0.08);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+      --orange: #d4500a;
+      --orange-light: #f5e8e1;
+      --orange-dark: #b84308;
+      --bg: #f8f8f6;
+      --surface: #ffffff;
+      --border: #e8e4e0;
+      --text: #1a1a1a;
+      --text-muted: #6b6560;
+      --radius: 12px;
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-off); color: var(--ink); min-height: 100vh; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
     /* NAV */
     nav {
-      background: #fff; border-bottom: 1px solid var(--rule);
-      padding: 0 24px; height: 60px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .logo { font-family: 'Sora', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--ink); text-decoration: none; }
-    .logo span { color: var(--accent); }
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-    .credit-badge {
-      display: flex; align-items: center; gap: 6px;
-      background: #F0FDF4; border: 1px solid #BBF7D0; color: var(--success);
-      font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 20px;
+
+    .nav-logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--orange);
+      text-decoration: none;
     }
-    .user-name { font-size: 0.85rem; font-weight: 600; color: var(--ink-mid); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .credits-badge {
+      background: var(--orange-light);
+      color: var(--orange);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #f0d4c4;
+    }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
     .btn-logout {
-      padding: 7px 16px; border-radius: var(--radius-sm);
-      border: 1px solid var(--rule); background: transparent;
-      font-size: 0.82rem; font-weight: 600; color: var(--ink-soft);
-      cursor: pointer; transition: all 0.2s;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, color 0.15s;
     }
-    .btn-logout:hover { border-color: var(--error); color: var(--error); }
+    .btn-logout:hover { border-color: #c0bab5; color: var(--text); }
 
-    /* LAYOUT */
-    .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px; }
-
-    /* WELCOME */
-    .welcome { margin-bottom: 32px; }
-    .welcome h1 { font-family: 'Sora', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
-    .welcome p { font-size: 0.9rem; color: var(--ink-soft); }
-
-    /* STATS ROW */
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-    .stat-card {
-      background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
-      padding: 20px; display: flex; flex-direction: column; gap: 6px;
+    /* MAIN */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
     }
-    .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
-    .stat-val { font-family: 'Sora', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--ink); }
-    .stat-sub { font-size: 0.75rem; color: var(--ink-soft); }
 
-    /* TOOLS */
-    .section-title { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
-    .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .greeting {
+      margin-bottom: 32px;
+    }
+
+    .greeting h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .greeting p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* CREDIT CARD */
+    .credit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .credit-info h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .credit-count {
+      font-family: 'Sora', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--orange);
+      line-height: 1;
+    }
+
+    .credit-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .buy-credits-btn {
+      background: var(--orange);
+      color: white;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .buy-credits-btn:hover { background: var(--orange-dark); }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    /* TOOLS GRID */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 44px;
+    }
+
     .tool-card {
-      background: #fff; border: 2px solid var(--rule); border-radius: var(--radius);
-      padding: 20px; cursor: pointer; transition: all 0.2s; text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
-    .tool-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); }
-    .tool-card.selected { border-color: var(--accent); background: var(--accent-light); }
-    .tool-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
-    .tool-name { font-size: 0.88rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
-    .tool-time { font-size: 0.72rem; color: var(--ink-soft); margin-bottom: 8px; }
-    .tool-credit-tag {
-      display: inline-block; font-size: 0.72rem; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
-      background: var(--accent-light); color: var(--accent);
+    .tool-card:hover {
+      border-color: var(--orange);
+      box-shadow: 0 4px 20px rgba(212,80,10,0.10);
+      transform: translateY(-2px);
     }
 
-    /* ENHANCE PANEL */
-    .enhance-panel {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;
+    .tool-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--orange-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
     }
-    .panel-box {
-      background: #fff; border: 1px solid var(--rule); border-radius: var(--radius); padding: 24px;
-    }
-    .panel-box h3 { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
-    .upload-zone {
-      border: 2px dashed var(--rule); border-radius: var(--radius);
-      padding: 40px 20px; text-align: center; cursor: pointer;
-      transition: all 0.2s; margin-bottom: 16px;
-    }
-    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
-    .upload-zone .uicon { font-size: 2rem; display: block; margin-bottom: 10px; }
-    .upload-zone h4 { font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
-    .upload-zone p { font-size: 0.78rem; color: var(--ink-soft); }
-    #file-input { display: none; }
-    .selected-file {
-      display: none; padding: 10px 14px; background: var(--bg-off);
-      border: 1px solid var(--rule); border-radius: var(--radius-sm);
-      font-size: 0.82rem; color: var(--ink-mid); margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .enhance-btn {
-      width: 100%; padding: 13px; border: none; border-radius: var(--radius-sm);
-      background: var(--accent); color: #fff; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .enhance-btn:hover { background: var(--accent-dark); }
-    .enhance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .progress-wrap { display: none; margin-top: 12px; }
-    .progress-bg { background: var(--rule); border-radius: 20px; height: 6px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--accent); border-radius: 20px; width: 0%; transition: width 0.4s; }
-    .progress-text { font-size: 0.78rem; color: var(--ink-soft); margin-top: 6px; text-align: center; }
 
-    /* RESULT */
-    .result-box { display: none; }
-    .result-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .result-img-wrap { position: relative; }
-    .result-img-wrap img { width: 100%; border-radius: var(--radius-sm); display: block; border: 1px solid var(--rule); }
-    .img-label {
-      position: absolute; bottom: 6px; left: 6px;
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-      background: rgba(0,0,0,0.55); color: #fff; padding: 3px 7px; border-radius: 5px;
+    .tool-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--orange);
     }
-    .download-btn {
-      width: 100%; padding: 11px; border-radius: var(--radius-sm);
-      border: 2px solid var(--accent); background: transparent;
-      color: var(--accent); font-size: 0.875rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
+
+    .tool-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
     }
-    .download-btn:hover { background: var(--accent); color: #fff; }
+
+    .tool-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .tool-cost {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange);
+      background: var(--orange-light);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* UPLOAD MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none; border: none;
+      font-size: 20px; cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .upload-area:hover { border-color: var(--orange); background: var(--orange-light); }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon { font-size: 36px; margin-bottom: 10px; }
+    .upload-text { font-size: 14px; font-weight: 500; color: var(--text); }
+    .upload-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .preview-img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+      max-height: 200px;
+      object-fit: contain;
+    }
+
+    .btn-enhance {
+      width: 100%;
+      background: var(--orange);
+      color: white;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.15s;
+    }
+    .btn-enhance:hover { background: var(--orange-dark); }
+    .btn-enhance:disabled { background: #ccc; cursor: not-allowed; }
+
+    .enhance-result {
+      margin-top: 16px;
+      display: none;
+    }
+    .enhance-result p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .enhance-result img {
+      width: 100%;
+      border-radius: 8px;
+      max-height: 200px;
+      object-fit: contain;
+    }
+    .btn-download {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-download:hover { background: var(--orange); color: white; }
 
     /* HISTORY */
-    .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .history-section { margin-top: 8px; }
+
+    .history-empty {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .history-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .history-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
     .history-table th {
-      padding: 10px 14px; text-align: left; font-size: 0.75rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft);
-      border-bottom: 1px solid var(--rule);
+      background: var(--bg);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
     }
-    .history-table td { padding: 12px 14px; border-bottom: 1px solid var(--rule); color: var(--ink-mid); }
+
+    .history-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
     .history-table tr:last-child td { border-bottom: none; }
-    .status-done { color: var(--success); font-weight: 600; }
-    .empty-history { text-align: center; padding: 40px; color: var(--ink-soft); font-size: 0.85rem; }
 
-    /* BUY CREDITS */
-    .credits-section { margin-bottom: 32px; }
-    .credits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .credit-card {
-      background: #fff; border: 1px solid var(--rule); border-radius: var(--radius);
-      padding: 24px; text-align: center; transition: all 0.2s; position: relative;
+    .badge-tool {
+      background: var(--orange-light);
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
     }
-    .credit-card:hover { box-shadow: var(--shadow-lg); }
-    .credit-card.popular { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-    .popular-tag {
-      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-      font-size: 0.7rem; font-weight: 700; background: var(--accent); color: #fff;
-      padding: 3px 12px; border-radius: 20px; white-space: nowrap;
-    }
-    .credit-name { font-weight: 700; font-size: 0.9rem; color: var(--ink); margin-bottom: 6px; }
-    .credit-price { font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
-    .credit-amount { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
-    .buy-btn {
-      width: 100%; padding: 10px; border: none; border-radius: var(--radius-sm);
-      background: var(--accent); color: #fff; font-size: 0.875rem; font-weight: 700;
-      cursor: pointer; transition: background 0.2s;
-    }
-    .buy-btn:hover { background: var(--accent-dark); }
 
-    /* LOADING SCREEN */
-    #loading-screen {
-      position: fixed; inset: 0; background: #fff;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 12px; z-index: 999;
+    /* BUY MODAL */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
     }
-    .loading-logo { font-family: 'Sora', sans-serif; font-size: 1.4rem; font-weight: 800; }
-    .loading-logo span { color: var(--accent); }
-    .loading-spinner {
-      width: 32px; height: 32px; border: 3px solid var(--rule);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+
+    .plan-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .plan-card.popular { border-color: var(--orange); }
+    .plan-card:hover { border-color: var(--orange); }
+
+    .popular-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .plan-credits {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .plan-unit {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .plan-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .upi-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    /* LOADING */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 768px) {
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .tools-grid { grid-template-columns: 1fr 1fr; }
-      .enhance-panel { grid-template-columns: 1fr; }
-      .credits-grid { grid-template-columns: 1fr; }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: white;
+      font-size: 14px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
     }
-    @media (max-width: 480px) {
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .tools-grid { grid-template-columns: 1fr 1fr; }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .plan-grid { grid-template-columns: 1fr; }
+      .credit-card { flex-direction: column; align-items: flex-start; }
+      .nav-right { gap: 10px; }
+      .user-name { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- Loading screen -->
-<div id="loading-screen">
-  <div class="loading-logo">ProPrint<span>India</span></div>
-  <div class="loading-spinner"></div>
-</div>
-
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo">ProPrint<span>India</span></a>
+  <a href="index.html" class="nav-logo">ProPrintIndia</a>
   <div class="nav-right">
-    <div class="credit-badge">⚡ <span id="nav-credits">0</span> Credits</div>
-    <span class="user-name" id="nav-user">...</span>
-    <a href="index.html" style="padding:7px 16px;border-radius:8px;border:1px solid #E5E5E5;background:transparent;font-size:0.82rem;font-weight:600;color:#444;text-decoration:none;">🏠 Home</a>
-    <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+    <a href="index.html" class="btn-logout" style="text-decoration:none;">🏠 Home</a>
+    <span class="credits-badge" id="navCredits">⚡ — credits</span>
+    <div class="nav-user">
+      <div class="avatar" id="userAvatar">?</div>
+      <span class="user-name" id="userName">Loading...</span>
+    </div>
+    <button class="btn-logout" onclick="handleLogout()">Log out</button>
   </div>
 </nav>
 
-<div class="page">
-
-  <!-- WELCOME -->
-  <div class="welcome">
-    <h1>Welcome back, <span id="welcome-name">there</span> 👋</h1>
-    <p>Choose a tool below and upload your image to get started.</p>
+<!-- MAIN -->
+<main>
+  <div class="greeting">
+    <h1 id="greetingText">Welcome back 👋</h1>
+    <p>Enhance your images for professional print quality.</p>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Credits Remaining</div>
-      <div class="stat-val" id="stat-credits">–</div>
-      <div class="stat-sub">Never expire</div>
+  <!-- CREDITS -->
+  <div class="credit-card">
+    <div class="credit-info">
+      <h2>Available Credits</h2>
+      <div class="credit-count" id="creditCount">—</div>
+      <div class="credit-label">1 credit = 1 enhancement</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Images Enhanced</div>
-      <div class="stat-val" id="stat-enhanced">0</div>
-      <div class="stat-sub">Total all time</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Credits Used</div>
-      <div class="stat-val" id="stat-used">0</div>
-      <div class="stat-sub">All time</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Account</div>
-      <div class="stat-val" style="font-size:1rem;margin-top:4px;" id="stat-email">–</div>
-      <div class="stat-sub" id="stat-provider">Email</div>
-    </div>
+    <button class="buy-credits-btn" onclick="openBuyModal()">Buy More Credits</button>
   </div>
 
   <!-- TOOLS -->
-  <div class="section-title">Select a Tool</div>
+  <div class="section-title">Your Tools</div>
   <div class="tools-grid">
-    <div class="tool-card selected" onclick="selectTool(this,'quickcrisp',1)" data-tool="quickcrisp" data-credits="1">
-      <span class="tool-icon">⚡</span>
+    <div class="tool-card" onclick="openTool('Quick Crisp', 'Sharpen and upscale images for sharp, clean print output.', 1)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>
+        </svg>
+      </div>
       <div class="tool-name">Quick Crisp</div>
-      <div class="tool-time">~5 seconds</div>
-      <span class="tool-credit-tag">1 Credit</span>
+      <div class="tool-desc">Sharpen and upscale images for sharp, clean print output.</div>
+      <span class="tool-cost">1 credit</span>
     </div>
-    <div class="tool-card" onclick="selectTool(this,'wallpaperpro',3)" data-tool="wallpaperpro" data-credits="3">
-      <span class="tool-icon">🖼️</span>
-      <div class="tool-name">Wallpaper Pro</div>
-      <div class="tool-time">8–12 minutes</div>
-      <span class="tool-credit-tag">3 Credits</span>
-    </div>
-    <div class="tool-card" onclick="selectTool(this,'restorer',2)" data-tool="restorer" data-credits="2">
-      <span class="tool-icon">⏳</span>
-      <div class="tool-name">Old Photo Restorer</div>
-      <div class="tool-time">~2 minutes</div>
-      <span class="tool-credit-tag">2 Credits</span>
-    </div>
-    <div class="tool-card" onclick="selectTool(this,'faceenhancer',2)" data-tool="faceenhancer" data-credits="2">
-      <span class="tool-icon">👤</span>
+
+    <div class="tool-card" onclick="openTool('Face Enhancer', 'Restore clarity and detail to faces in portraits and ID photos.', 2)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </div>
       <div class="tool-name">Face Enhancer</div>
-      <div class="tool-time">~1 minute</div>
-      <span class="tool-credit-tag">2 Credits</span>
-    </div>
-  </div>
-
-  <!-- ENHANCE PANEL -->
-  <div class="enhance-panel">
-    <div class="panel-box">
-      <h3>Upload Image</h3>
-      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-        <span class="uicon">🖼</span>
-        <h4>Drop image here or click to browse</h4>
-        <p>JPG · PNG · WebP — up to 10 MB</p>
-      </div>
-      <input type="file" id="file-input" accept="image/*" onchange="handleFile(this)" />
-      <div class="selected-file" id="selected-file">
-        <span>📄</span><span id="file-name">No file selected</span>
-      </div>
-      <div class="progress-wrap" id="progress-wrap">
-        <div class="progress-bg"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="progress-text" id="progress-text">Processing...</div>
-      </div>
-      <button class="enhance-btn" id="enhance-btn" disabled onclick="startEnhancement()">
-        Select an image first
-      </button>
+      <div class="tool-desc">Restore clarity and detail to faces in portraits and ID photos.</div>
+      <span class="tool-cost">2 credits</span>
     </div>
 
-    <div class="panel-box">
-      <h3>Result</h3>
-      <div id="result-placeholder" style="text-align:center;padding:60px 20px;color:var(--ink-soft);font-size:0.85rem;">
-        <div style="font-size:2.5rem;margin-bottom:12px;">✨</div>
-        Your enhanced image will appear here
+    <div class="tool-card" onclick="openTool('Old Photo Restorer', 'Remove scratches and restore faded, damaged old photographs.', 2)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
       </div>
-      <div class="result-box" id="result-box">
-        <div class="result-imgs">
-          <div class="result-img-wrap">
-            <img id="result-before" src="" alt="Before" />
-            <span class="img-label">Before</span>
-          </div>
-          <div class="result-img-wrap">
-            <img id="result-after" src="" alt="After" />
-            <span class="img-label">After</span>
-          </div>
-        </div>
-        <button class="download-btn" onclick="downloadResult()">↓ Download Enhanced Image</button>
-      </div>
+      <div class="tool-name">Old Photo Restorer</div>
+      <div class="tool-desc">Remove scratches and restore faded, damaged old photographs.</div>
+      <span class="tool-cost">2 credits</span>
     </div>
-  </div>
 
-  <!-- BUY CREDITS -->
-  <div class="credits-section">
-    <div class="section-title">Buy More Credits</div>
-    <div class="credits-grid">
-      <div class="credit-card">
-        <div class="credit-name">Starter</div>
-        <div class="credit-price">₹199</div>
-        <div class="credit-amount">20 Credits</div>
-        <button class="buy-btn" onclick="buyCredits(199,'Starter',20)">Buy Now</button>
+    <div class="tool-card" onclick="openTool('Wallpaper Pro', 'Upscale images to high-resolution for large-format wallpaper printing.', 3)">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
       </div>
-      <div class="credit-card popular">
-        <div class="popular-tag">Most Popular</div>
-        <div class="credit-name">Professional</div>
-        <div class="credit-price">₹499</div>
-        <div class="credit-amount">60 Credits</div>
-        <button class="buy-btn" onclick="buyCredits(499,'Professional',60)">Buy Now</button>
-      </div>
-      <div class="credit-card">
-        <div class="credit-name">Studio</div>
-        <div class="credit-price">₹999</div>
-        <div class="credit-amount">150 Credits</div>
-        <button class="buy-btn" onclick="buyCredits(999,'Studio',150)">Buy Now</button>
-      </div>
+      <div class="tool-name">Wallpaper Pro</div>
+      <div class="tool-desc">Upscale images to high-resolution for large-format wallpaper printing.</div>
+      <span class="tool-cost">3 credits</span>
     </div>
   </div>
 
   <!-- HISTORY -->
-  <div class="section-title">Enhancement History</div>
-  <div class="panel-box" style="margin-bottom:40px;">
-    <div id="history-wrap">
-      <div class="empty-history">No enhancements yet — upload your first image above!</div>
+  <div class="history-section">
+    <div class="section-title">Enhancement History</div>
+    <div id="historyContainer" class="history-empty">No enhancements yet. Use a tool above to get started.</div>
+  </div>
+</main>
+
+<!-- TOOL MODAL -->
+<div class="modal-overlay" id="toolModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('toolModal')">✕</button>
+    <h3 id="modalToolName">Quick Crisp</h3>
+    <p class="modal-subtitle" id="modalToolDesc"></p>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" accept="image/*" id="fileInput" onchange="handleFile(event)" />
+      <div class="upload-icon">🖼️</div>
+      <div class="upload-text">Click to upload image</div>
+      <div class="upload-hint">JPG, PNG, WEBP · Max 20MB</div>
+    </div>
+    <img id="previewImg" class="preview-img" alt="Preview" />
+    <button class="btn-enhance" id="enhanceBtn" onclick="runEnhancement()" disabled>Enhance Image</button>
+    <div class="enhance-result" id="enhanceResult">
+      <p>✅ Enhancement complete!</p>
+      <img id="resultImg" alt="Enhanced" />
+      <button class="btn-download" id="downloadBtn">Download Enhanced Image</button>
     </div>
   </div>
-
 </div>
 
+<!-- BUY MODAL -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('buyModal')">✕</button>
+    <h3>Buy Credits</h3>
+    <p class="modal-subtitle">Pay once, use anytime. No subscription.</p>
+    <div class="plan-grid">
+      <div class="plan-card" onclick="selectPlan(this, 50, 49)">
+        <div class="plan-credits">50</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹49</div>
+      </div>
+      <div class="plan-card popular" onclick="selectPlan(this, 150, 129)">
+        <div class="popular-label">★ Best Value</div>
+        <div class="plan-credits">150</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹129</div>
+      </div>
+      <div class="plan-card" onclick="selectPlan(this, 500, 399)">
+        <div class="plan-credits">500</div>
+        <div class="plan-unit">credits</div>
+        <div class="plan-price">₹399</div>
+      </div>
+    </div>
+    <div class="upi-note">Payments via UPI · Razorpay · Instant credit top-up</div>
+    <button class="buy-credits-btn" style="width:100%;margin-top:20px" onclick="proceedToPay()">Pay with UPI</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script>
-  const sb = window.supabase.createClient(
-    'https://mhqlqnsymvfkqedqmhqy.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODgyMTEsImV4cCI6MjA5NjA2NDIxMX0.UZrSyhxM_T7qhEgA5OrqtLj8YvGsfIDrDY9Wu8OOm5o'
-  );
+  const SUPABASE_URL = 'https://mhqlqnsymvfkqedqmhqy.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MDIxODMsImV4cCI6MjA2NTM3ODE4M30.lTaFPXIYrIMFp0g6ytnJ5T6bN3HJb9TjhSrPpjG8EJ8';
+
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
-  let userCredits = 0;
-  let selectedTool = { key: 'quickcrisp', credits: 1 };
+  let currentCredits = 0;
+  let currentToolCost = 1;
+  let currentToolName = '';
   let selectedFile = null;
-  let resultBlob = null;
+  let selectedPlan = null;
+  let history = [];
 
-  // ── AUTH CHECK ──
+  // AUTH CHECK
   async function init() {
-    // First try to get existing session
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      loadUserData();
-      return;
-    }
-
-    // If no session, listen for auth state change (handles Google OAuth redirect)
-    const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        subscription.unsubscribe();
+    // Listen for auth state - catches OAuth redirect sessions
+    _supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && !currentUser) {
         currentUser = session.user;
-        loadUserData();
-      } else if (event === 'SIGNED_OUT') {
-        window.location.href = 'login.html';
+        if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+        setUserUI(currentUser);
+        await loadCredits();
+        loadHistory();
       }
     });
 
-    // Timeout fallback — if no session after 4 seconds, redirect to login
-    setTimeout(async () => {
-      const { data: { session: retrySession } } = await sb.auth.getSession();
-      if (!retrySession) {
-        window.location.href = 'login.html';
-      }
-    }, 4000);
-  }
-
-  async function loadUserData() {
-    const meta = currentUser.user_metadata;
-    const name = meta.first_name || meta.full_name?.split(' ')[0] || currentUser.email.split('@')[0];
-    const email = currentUser.email;
-    const provider = currentUser.app_metadata?.provider || 'email';
-
-    document.getElementById('welcome-name').textContent = name;
-    document.getElementById('nav-user').textContent = name;
-    document.getElementById('stat-email').textContent = email;
-    document.getElementById('stat-provider').textContent = provider === 'google' ? 'Google account' : 'Email account';
-
-    // Load credits
-    const { data: creditsData, error: creditsError } = await sb.from('credits').select('balance').eq('user_id', currentUser.id).single();
-    if (creditsError && creditsError.code === 'PGRST116') {
-      // No credits row found - create one with 10 free credits
-      await sb.from('credits').insert({ user_id: currentUser.id, balance: 10 });
-      userCredits = 10;
+    // Also try getSession directly
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+      setUserUI(currentUser);
+      await loadCredits();
+      loadHistory();
     } else {
-      userCredits = creditsData?.balance || 0;
+      // Wait 2 seconds for OAuth hash to be processed before redirecting
+      setTimeout(async () => {
+        const { data: { session: s2 } } = await _supabase.auth.getSession();
+        if (!s2) window.location.href = 'login.html';
+      }, 2000);
     }
-    document.getElementById('nav-credits').textContent = userCredits;
-    document.getElementById('stat-credits').textContent = userCredits;
-
-    // Load history
-    const { data: history } = await sb.from('enhancements').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
-    renderHistory(history || []);
-
-    // Stats
-    const enhanced = history?.length || 0;
-    const creditsUsed = history?.reduce((sum, h) => sum + (h.credits_used || 0), 0) || 0;
-    document.getElementById('stat-enhanced').textContent = enhanced;
-    document.getElementById('stat-used').textContent = creditsUsed;
-
-    document.getElementById('loading-screen').style.display = 'none';
   }
 
-  function renderHistory(items) {
-    const wrap = document.getElementById('history-wrap');
-    if (!items.length) {
-      wrap.innerHTML = '<div class="empty-history">No enhancements yet — upload your first image above!</div>';
+  function setUserUI(user) {
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+    const initial = name.charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initial;
+    document.getElementById('userName').textContent = name;
+    document.getElementById('greetingText').textContent = `Welcome back, ${name.split(' ')[0]} 👋`;
+  }
+
+  async function loadCredits() {
+    try {
+      const { data, error } = await _supabase
+        .from('profiles')
+        .select('credits')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (error) {
+        console.warn('Profile fetch error:', error.message);
+        currentCredits = 0;
+      } else {
+        currentCredits = data?.credits ?? 0;
+      }
+    } catch (e) {
+      console.warn('loadCredits exception:', e);
+      currentCredits = 0;
+    }
+    updateCreditsUI();
+  }
+
+  function updateCreditsUI() {
+    document.getElementById('creditCount').textContent = currentCredits;
+    document.getElementById('navCredits').textContent = `⚡ ${currentCredits} credits`;
+  }
+
+  function loadHistory() {
+    // Load from localStorage as fallback (can be replaced with Supabase table later)
+    const saved = localStorage.getItem(`ppi_history_${currentUser?.id}`);
+    if (saved) {
+      history = JSON.parse(saved);
+      renderHistory();
+    }
+  }
+
+  function saveHistory(entry) {
+    history.unshift(entry);
+    if (history.length > 20) history = history.slice(0, 20);
+    localStorage.setItem(`ppi_history_${currentUser?.id}`, JSON.stringify(history));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyContainer');
+    if (!history.length) {
+      container.className = 'history-empty';
+      container.innerHTML = 'No enhancements yet. Use a tool above to get started.';
       return;
     }
-    wrap.innerHTML = `
-      <table class="history-table">
-        <thead><tr>
-          <th>Tool</th><th>File</th><th>Credits Used</th><th>Date</th><th>Status</th>
-        </tr></thead>
+    container.className = 'history-table';
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>File</th>
+            <th>Date</th>
+            <th>Credits Used</th>
+          </tr>
+        </thead>
         <tbody>
-          ${items.map(i => `
+          ${history.map(h => `
             <tr>
-              <td>${i.tool || '–'}</td>
-              <td>${i.filename || '–'}</td>
-              <td>${i.credits_used || '–'}</td>
-              <td>${new Date(i.created_at).toLocaleDateString('en-IN')}</td>
-              <td class="status-done">✓ Done</td>
+              <td><span class="badge-tool">${h.tool}</span></td>
+              <td>${h.file}</td>
+              <td>${h.date}</td>
+              <td>−${h.cost}</td>
             </tr>
           `).join('')}
         </tbody>
-      </table>`;
+      </table>
+    `;
   }
 
-  // ── TOOL SELECTION ──
-  function selectTool(el, key, credits) {
-    document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedTool = { key, credits };
-    updateEnhanceBtn();
+  // TOOL MODAL
+  function openTool(name, desc, cost) {
+    currentToolName = name;
+    currentToolCost = cost;
+    selectedFile = null;
+    document.getElementById('modalToolName').textContent = name;
+    document.getElementById('modalToolDesc').textContent = `${desc} · Costs ${cost} credit${cost > 1 ? 's' : ''}`;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('enhanceBtn').disabled = true;
+    document.getElementById('enhanceResult').style.display = 'none';
+    document.getElementById('toolModal').classList.add('open');
   }
 
-  // ── FILE HANDLING ──
-  const uploadZone = document.getElementById('upload-zone');
-  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-  uploadZone.addEventListener('drop', e => {
-    e.preventDefault(); uploadZone.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0];
-    if (f && f.type.startsWith('image/')) setFile(f);
-  });
-
-  function handleFile(input) { if (input.files[0]) setFile(input.files[0]); }
-
-  function setFile(f) {
-    selectedFile = f;
-    const sf = document.getElementById('selected-file');
-    sf.style.display = 'flex';
-    document.getElementById('file-name').textContent = `${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
-    uploadZone.querySelector('h4').textContent = f.name;
-    updateEnhanceBtn();
-  }
-
-  function updateEnhanceBtn() {
-    const btn = document.getElementById('enhance-btn');
-    const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro', restorer: 'Old Photo Restorer', faceenhancer: 'Face Enhancer' };
-    if (!selectedFile) { btn.disabled = true; btn.textContent = 'Select an image first'; return; }
-    if (userCredits < selectedTool.credits) { btn.disabled = true; btn.textContent = 'Not enough credits'; return; }
-    btn.disabled = false;
-    btn.textContent = `Enhance with ${toolNames[selectedTool.key]} (${selectedTool.credits} credit${selectedTool.credits > 1 ? 's' : ''})`;
-  }
-
-  // ── ENHANCEMENT ──
-  async function startEnhancement() {
-    if (!selectedFile || userCredits < selectedTool.credits) return;
-    document.getElementById('result-box').style.display = 'none';
-    document.getElementById('result-placeholder').style.display = 'block';
-    document.getElementById('progress-wrap').style.display = 'block';
-    document.getElementById('enhance-btn').disabled = true;
-
-    const fill = document.getElementById('progress-fill');
-    const text = document.getElementById('progress-text');
-    const duration = selectedTool.key === 'wallpaperpro' ? 120000 : selectedTool.key === 'restorer' ? 20000 : selectedTool.key === 'faceenhancer' ? 10000 : 5000;
-    let pct = 0;
-    const timer = setInterval(() => {
-      pct = Math.min(pct + 1, 92);
-      fill.style.width = pct + '%';
-      text.textContent = pct < 30 ? 'Uploading...' : pct < 65 ? 'AI enhancing...' : 'Finalising...';
-    }, duration / 92);
-
-    // Simulate (replace with real API call to your enhancement endpoint)
-    setTimeout(async () => {
-      clearInterval(timer);
-      fill.style.width = '100%';
-      text.textContent = 'Done!';
-
-      // Deduct credits
-      const newBalance = userCredits - selectedTool.credits;
-      await sb.from('credits').update({ balance: newBalance }).eq('user_id', currentUser.id);
-
-      // Log to history
-      const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro', restorer: 'Old Photo Restorer', faceenhancer: 'Face Enhancer' };
-      await sb.from('enhancements').insert({
-        user_id: currentUser.id,
-        tool: toolNames[selectedTool.key],
-        filename: selectedFile.name,
-        credits_used: selectedTool.credits
-      });
-
-      userCredits = newBalance;
-      document.getElementById('nav-credits').textContent = userCredits;
-      document.getElementById('stat-credits').textContent = userCredits;
-
-      setTimeout(() => {
-        document.getElementById('progress-wrap').style.display = 'none';
-        document.getElementById('enhance-btn').disabled = false;
-        updateEnhanceBtn();
-        showResult();
-        loadUserData();
-      }, 500);
-    }, duration);
-  }
-
-  function showResult() {
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
     const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('result-before').src = e.target.result;
-      document.getElementById('result-after').src = e.target.result; // Replace with actual enhanced image URL
-      document.getElementById('result-placeholder').style.display = 'none';
-      document.getElementById('result-box').style.display = 'block';
-      resultBlob = selectedFile;
+    reader.onload = (ev) => {
+      const img = document.getElementById('previewImg');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('enhanceBtn').disabled = false;
+  }
+
+  async function runEnhancement() {
+    if (!selectedFile) return;
+    if (currentCredits < currentToolCost) {
+      showToast('Not enough credits. Please buy more.');
+      return;
+    }
+
+    const btn = document.getElementById('enhanceBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Enhancing...';
+
+    // Simulate enhancement (replace with real API call later)
+    await new Promise(r => setTimeout(r, 2500));
+
+    // Deduct credits
+    currentCredits -= currentToolCost;
+    await _supabase.from('profiles').update({ credits: currentCredits }).eq('id', currentUser.id);
+    updateCreditsUI();
+
+    // Show result (for now, show same image — replace with enhanced URL from your API)
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const resultImg = document.getElementById('resultImg');
+      resultImg.src = ev.target.result;
+      document.getElementById('enhanceResult').style.display = 'block';
+
+      // Download
+      document.getElementById('downloadBtn').onclick = () => {
+        const a = document.createElement('a');
+        a.href = ev.target.result;
+        a.download = `proprintindia_${currentToolName.replace(/ /g,'_').toLowerCase()}_${selectedFile.name}`;
+        a.click();
+      };
     };
     reader.readAsDataURL(selectedFile);
+
+    btn.innerHTML = 'Enhance Image';
+    btn.disabled = false;
+
+    // Save to history
+    saveHistory({
+      tool: currentToolName,
+      file: selectedFile.name,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      cost: currentToolCost
+    });
+
+    showToast('Enhancement complete!');
   }
 
-  function downloadResult() {
-    if (!resultBlob) return;
-    const url = URL.createObjectURL(resultBlob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'proprintindia-enhanced-' + resultBlob.name;
-    a.click(); URL.revokeObjectURL(url);
+  // BUY MODAL
+  function openBuyModal() {
+    selectedPlan = null;
+    document.getElementById('buyModal').classList.add('open');
   }
 
-  // ── BUY CREDITS ──
-  function buyCredits(amount, plan, credits) {
-    // Replace with your Razorpay integration
-    alert(`Razorpay payment for ${plan} — ₹${amount} for ${credits} credits.\nIntegrate your Razorpay key here.`);
+  function selectPlan(el, credits, price) {
+    document.querySelectorAll('.plan-card').forEach(c => c.style.borderColor = '');
+    el.style.borderColor = 'var(--orange)';
+    selectedPlan = { credits, price };
   }
 
-  // ── LOGOUT ──
+  function proceedToPay() {
+    if (!selectedPlan) { showToast('Please select a plan first.'); return; }
+    showToast(`Redirecting to payment for ₹${selectedPlan.price}...`);
+    // Wire up your payment gateway (Razorpay/UPI) here
+    setTimeout(() => closeModal('buyModal'), 1500);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // LOGOUT
   async function handleLogout() {
-    await sb.auth.signOut();
+    await _supabase.auth.signOut();
     window.location.href = 'login.html';
   }
 
-  // ── START ──
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
   init();
 </script>
-
 </body>
 </html>
