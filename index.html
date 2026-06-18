@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProPrintIndia — AI Image Enhancement for Print</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #111111;
+      --ink-mid: #444444;
+      --ink-soft: #777777;
+      --rule: #E5E5E5;
+      --bg: #FFFFFF;
+      --bg-off: #F7F7F7;
+      --accent: #1A56FF;
+      --accent-light: #EEF2FF;
+      --accent-dark: #0D3ACC;
+      --success: #16A34A;
+      --warn: #D97706;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 2px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rule);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ink-mid);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    /* balance hidden by default, shown when logged in via JS */
+    #nav-balance {
+      display: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--success);
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+    .btn-ghost {
+      padding: 7px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--rule);
+      background: transparent;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ink-mid);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      padding: 7px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--accent);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; transition: all 0.3s; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      color: var(--ink);
+      margin-bottom: 18px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-large {
+      padding: 13px 28px;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 48px;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--ink-soft); margin-top: 2px; }
+
+    /* ── BEFORE/AFTER ── */
+    .preview-section {
+      padding: 0 24px 72px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .preview-label {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+    }
+    .before-after {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 16/7;
+      background: var(--bg-off);
+      cursor: ew-resize;
+      user-select: none;
+    }
+    .ba-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .ba-after { clip-path: inset(0 50% 0 0); }
+    .ba-divider {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 50%;
+      width: 3px;
+      background: #fff;
+      box-shadow: 0 0 8px rgba(0,0,0,0.4);
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .ba-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px; height: 40px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+    .ba-tags {
+      position: absolute;
+      bottom: 12px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px;
+      pointer-events: none;
+    }
+    .ba-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* ── TOOLS ── */
+    section { padding: 72px 24px; }
+    .section-inner { max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .section-sub {
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      max-width: 500px;
+      margin-bottom: 48px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .tool-card {
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      background: var(--bg);
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .tool-card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .tool-icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .tool-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .tool-desc {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .tool-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--bg-off);
+      color: var(--ink-mid);
+      border: 1px solid var(--rule);
+    }
+    .tag-accent { background: var(--accent-light); color: var(--accent); border-color: #C7D7FE; }
+    .tag-warn { background: #FFFBEB; color: var(--warn); border-color: #FDE68A; }
+    .tool-credits {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    /* ── UPLOAD ── */
+    #enhance { background: var(--bg-off); }
+    .enhance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    .tool-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .tool-opt {
+      border: 2px solid var(--rule);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+      background: var(--bg);
+    }
+    .tool-opt:hover { border-color: var(--accent); }
+    .tool-opt.active { border-color: var(--accent); background: var(--accent-light); }
+    .tool-opt-icon { font-size: 1.3rem; margin-bottom: 4px; }
+    .tool-opt-name { font-size: 0.78rem; font-weight: 700; color: var(--ink); }
+    .tool-opt-time { font-size: 0.7rem; color: var(--ink-soft); margin-top: 2px; }
+
+    .upload-zone {
+      border: 2px dashed var(--rule);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .upload-icon { font-size: 2.4rem; margin-bottom: 12px; display: block; }
+    .upload-zone h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+    .upload-zone p { font-size: 0.82rem; color: var(--ink-soft); }
+    #file-input { display: none; }
+
+    .enhance-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    .enhance-btn:hover { background: var(--accent-dark); }
+    .enhance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .progress-wrap { display: none; margin-top: 12px; }
+    .progress-bar-bg {
+      background: var(--rule);
+      border-radius: 20px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 20px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .progress-text { font-size: 0.8rem; color: var(--ink-soft); margin-top: 6px; text-align: center; }
+
+    .result-panel {
+      display: none;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .result-panel-header {
+      padding: 14px 20px;
+      background: var(--bg-off);
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-panel-body { padding: 20px; }
+    .result-imgs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .result-img-wrap { position: relative; }
+    .result-img-wrap img {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      display: block;
+    }
+    .result-img-label {
+      position: absolute;
+      bottom: 6px; left: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      padding: 3px 7px;
+      border-radius: 5px;
+    }
+    .download-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .download-btn:hover { background: var(--accent); color: #fff; }
+
+    /* ── PORTFOLIO ── */
+    #portfolio { background: var(--bg); }
+    .portfolio-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .ptab {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--rule);
+      background: transparent;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-mid);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ptab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .ptab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .portfolio-item {
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 4/3;
+      background: var(--bg-off);
+      border: 1px solid var(--rule);
+    }
+    .portfolio-item-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 20px 14px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .portfolio-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+    }
+    .portfolio-placeholder span { font-size: 2.2rem; }
+
+    /* ── PRICING ── */
+    #pricing { background: var(--bg-off); }
+    .credit-cost-table {
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .cct-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 12px 20px;
+      background: var(--bg-off);
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .cct-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.88rem;
+      align-items: center;
+    }
+    .cct-row:last-child { border-bottom: none; }
+    .cct-tool { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .cct-credits { color: var(--accent); font-weight: 700; }
+    .cct-note { color: var(--ink-soft); font-size: 0.8rem; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .price-card {
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      background: var(--bg);
+      text-align: center;
+      position: relative;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .price-card:hover { box-shadow: var(--shadow-lg); }
+    .price-card.popular {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--accent);
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .price-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .price-amount {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .price-amount sup { font-size: 1.1rem; vertical-align: super; }
+    .price-usd { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 4px; }
+    .price-credits {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .price-features li {
+      font-size: 0.83rem;
+      color: var(--ink-mid);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .price-features li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .price-note { font-size: 0.72rem; color: var(--ink-soft); margin-top: 10px; }
+
+    /* ── COMPARE ── */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .compare-table th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border-bottom: 2px solid var(--rule);
+      color: var(--ink);
+    }
+    .compare-table th:not(:first-child) { text-align: center; }
+    .compare-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink-mid);
+    }
+    .compare-table td:not(:first-child) { text-align: center; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table .check { color: var(--success); font-weight: 700; font-size: 1.1rem; }
+    .compare-table .cross { color: #DC2626; font-weight: 700; font-size: 1.1rem; }
+    .compare-table .us { font-weight: 700; color: var(--ink); }
+    .compare-wrap {
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--bg); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .contact-info h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .contact-info p { font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 24px; }
+    .contact-detail {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .contact-icon {
+      width: 38px; height: 38px;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .contact-detail-text { font-size: 0.88rem; }
+    .contact-detail-label { font-weight: 600; color: var(--ink); }
+    .contact-detail-val { color: var(--ink-soft); }
+
+    .contact-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field label { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      padding: 10px 14px;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      color: var(--ink);
+      background: var(--bg);
+      transition: border-color 0.2s;
+      outline: none;
+      resize: vertical;
+    }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus { border-color: var(--accent); }
+    .form-success {
+      display: none;
+      padding: 14px;
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      color: var(--success);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 32px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .footer-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links { display: flex; gap: 20px; list-style: none; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.82rem; color: var(--ink-soft); text-decoration: none; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy { font-size: 0.78rem; color: var(--ink-soft); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 60px; left: 0; right: 0;
+        background: #fff;
+        border-bottom: 1px solid var(--rule);
+        padding: 16px 24px;
+        gap: 16px;
+        box-shadow: var(--shadow);
+        z-index: 99;
+      }
+      .hamburger { display: flex; }
+      .nav-actions .btn-ghost { display: none; }
+      .enhance-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool-selector { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="main-nav">
+  <a href="index.html" class="nav-logo">ProPrint<span>India</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#enhance">Enhance</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <span id="nav-balance">⚡ <span id="balance-val">0</span> Credits</span>
+    <a href="login.html" class="btn-ghost" id="nav-login">Log In</a>
+    <a href="signup.html" class="btn-primary" id="nav-signup">Get Started</a>
+    <button class="btn-ghost" id="nav-logout" style="display:none;" onclick="handleLogout()">Log Out</button>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-eyebrow">⚡ AI-Powered · Built for Indian Printers</div>
+  <h1>Turn Any Image Into<br /><em>Print-Ready Artwork</em></h1>
+  <p>Professional AI enhancement for posters, wallpapers, portraits, and vintage prints — pay once via UPI, credits never expire.</p>
+  <div class="hero-cta">
+    <a href="signup.html" class="btn-primary btn-large">Start Enhancing Free</a>
+    <a href="#pricing" class="btn-ghost btn-large">View Pricing</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">10K+</div><div class="stat-label">Images Enhanced</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">Specialist AI Tools</div></div>
+    <div class="stat"><div class="stat-num">UPI</div><div class="stat-label">Payments Supported</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Credits Never Expire</div></div>
+  </div>
+</div>
+
+<!-- ── BEFORE/AFTER ── -->
+<div class="preview-section">
+  <div class="preview-label">See the difference</div>
+  <div class="before-after" id="ba-slider">
+    <!-- Use your own hosted images here instead of GitHub raw URLs -->
+    <img class="ba-img" id="ba-before" src="assets/sample-before.jpg" alt="Before enhancement" onerror="this.style.display='none'" />
+    <img class="ba-img ba-after" id="ba-after" src="assets/sample-after.jpg" alt="After enhancement" onerror="this.style.display='none'" />
+    <div class="ba-divider" id="ba-divider"></div>
+    <div class="ba-handle" id="ba-handle">⟺</div>
+    <div class="ba-tags">
+      <span class="ba-tag">Before</span>
+      <span class="ba-tag">After · Enhanced</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOOLS ── -->
+<section id="tools">
+  <div class="section-inner">
+    <div class="section-label">Our Tools</div>
+    <h2 class="section-title">Four specialist tools, one purpose</h2>
+    <p class="section-sub">Every tool is tuned for professional print output — not just screen viewing.</p>
+    <div class="tools-grid">
+
+      <div class="tool-card">
+        <span class="tool-credits">1 Credit / image</span>
+        <span class="tool-icon">⚡</span>
+        <div class="tool-name">Quick Crisp</div>
+        <p class="tool-desc">Need it now? Quick Crisp delivers a clean, general enhancement in seconds — ideal for urgent print jobs, A4/A3 posters, banners, and product photos.</p>
+        <div class="tool-meta">
+          <span class="tag tag-accent">~5 seconds</span>
+          <span class="tag">Posters</span>
+          <span class="tag">Banners</span>
+          <span class="tag">Product Photos</span>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-credits">3 Credits / image</span>
+        <span class="tool-icon">🖼️</span>
+        <div class="tool-name">Wallpaper Pro</div>
+        <p class="tool-desc">Deep pixel analysis for large-format and mural prints. Every detail is preserved and enhanced — chinoiserie, botanical, wildlife, and full-wall artwork. Large output files, maximum quality.</p>
+        <div class="tool-meta">
+          <span class="tag tag-warn">8–12 minutes</span>
+          <span class="tag">Murals</span>
+          <span class="tag">Full-wall</span>
+          <span class="tag">Large Format</span>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-credits">2 Credits / image</span>
+        <span class="tool-icon">⏳</span>
+        <div class="tool-name">Old Photo Restorer</div>
+        <p class="tool-desc">Revive scratched, faded, or torn family photographs. AI removes noise, repairs damage, and restores colour to archival quality — ready to reprint and frame.</p>
+        <div class="tool-meta">
+          <span class="tag tag-accent">~2 minutes</span>
+          <span class="tag">Scratch Removal</span>
+          <span class="tag">Colour Restore</span>
+          <span class="tag">Archives</span>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <span class="tool-credits">2 Credits / image</span>
+        <span class="tool-icon">👤</span>
+        <div class="tool-name">Face Enhancer</div>
+        <p class="tool-desc">Auto-detect and sharpen facial features with precision. Perfect for portraits, ID photos, wedding albums, and professional headshots destined for print.</p>
+        <div class="tool-meta">
+          <span class="tag tag-accent">~1 minute</span>
+          <span class="tag">Portraits</span>
+          <span class="tag">ID Photos</span>
+          <span class="tag">Weddings</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── ENHANCE (UPLOAD) ── -->
+<section id="enhance">
+  <div class="section-inner">
+    <div class="section-label">Enhance Now</div>
+    <h2 class="section-title">Upload your image</h2>
+    <p class="section-sub">Select a tool, upload your file, and download print-ready output.</p>
+
+    <div class="enhance-grid">
+      <div>
+        <!-- Tool selector -->
+        <div class="tool-selector" id="tool-selector">
+          <div class="tool-opt active" data-tool="quickcrisp" data-credits="1" onclick="selectTool(this)">
+            <div class="tool-opt-icon">⚡</div>
+            <div class="tool-opt-name">Quick Crisp</div>
+            <div class="tool-opt-time">~5 sec · 1 credit</div>
+          </div>
+          <div class="tool-opt" data-tool="wallpaperpro" data-credits="3" onclick="selectTool(this)">
+            <div class="tool-opt-icon">🖼️</div>
+            <div class="tool-opt-name">Wallpaper Pro</div>
+            <div class="tool-opt-time">8–12 min · 3 credits</div>
+          </div>
+          <div class="tool-opt" data-tool="restorer" data-credits="2" onclick="selectTool(this)">
+            <div class="tool-opt-icon">⏳</div>
+            <div class="tool-opt-name">Old Photo Restorer</div>
+            <div class="tool-opt-time">~2 min · 2 credits</div>
+          </div>
+          <div class="tool-opt" data-tool="faceenhancer" data-credits="2" onclick="selectTool(this)">
+            <div class="tool-opt-icon">👤</div>
+            <div class="tool-opt-name">Face Enhancer</div>
+            <div class="tool-opt-time">~1 min · 2 credits</div>
+          </div>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <span class="upload-icon">🖼</span>
+          <h3>Drop image here or click to browse</h3>
+          <p>JPG · PNG · WebP — up to 10 MB</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(this)" />
+
+        <!-- Progress -->
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+          <div class="progress-text" id="progress-text">Starting...</div>
+        </div>
+
+        <button class="enhance-btn" id="enhance-btn" disabled onclick="startEnhancement()">
+          Enhance Image
+        </button>
+      </div>
+
+      <!-- Result panel -->
+      <div class="result-panel" id="result-panel">
+        <div class="result-panel-header">✅ Enhancement complete</div>
+        <div class="result-panel-body">
+          <div class="result-imgs">
+            <div class="result-img-wrap">
+              <img id="result-before" src="" alt="Before" />
+              <span class="result-img-label">Before</span>
+            </div>
+            <div class="result-img-wrap">
+              <img id="result-after" src="" alt="After" />
+              <span class="result-img-label">After</span>
+            </div>
+          </div>
+          <button class="download-btn" id="download-btn" onclick="downloadResult()">↓ Download Enhanced Image</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PORTFOLIO ── -->
+<section id="portfolio">
+  <div class="section-inner">
+    <div class="section-label">Portfolio</div>
+    <h2 class="section-title">Recent enhancements</h2>
+    <p class="section-sub">Before & after results from our customers across all four tools.</p>
+
+    <div class="portfolio-tabs">
+      <button class="ptab active" onclick="filterPortfolio('all', this)">All</button>
+      <button class="ptab" onclick="filterPortfolio('poster', this)">Posters & Banners</button>
+      <button class="ptab" onclick="filterPortfolio('portrait', this)">Portraits</button>
+      <button class="ptab" onclick="filterPortfolio('vintage', this)">Vintage Photos</button>
+      <button class="ptab" onclick="filterPortfolio('wallpaper', this)">Wallpapers</button>
+    </div>
+
+    <div class="portfolio-grid" id="portfolio-grid">
+      <!-- Items injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Buy credits once, use forever</h2>
+    <p class="section-sub">No subscription. Pay via UPI, card, or net banking. Credits are deducted per tool used and never expire.</p>
+
+    <!-- Credit cost per tool -->
+    <div class="credit-cost-table">
+      <div class="cct-header">
+        <span>Tool</span>
+        <span>Credits per image</span>
+        <span>Best for</span>
+      </div>
+      <div class="cct-row">
+        <span class="cct-tool">⚡ Quick Crisp</span>
+        <span class="cct-credits">1 credit</span>
+        <span class="cct-note">Urgent jobs, posters, banners</span>
+      </div>
+      <div class="cct-row">
+        <span class="cct-tool">🖼️ Wallpaper Pro</span>
+        <span class="cct-credits">3 credits</span>
+        <span class="cct-note">Murals, full-wall prints</span>
+      </div>
+      <div class="cct-row">
+        <span class="cct-tool">⏳ Old Photo Restorer</span>
+        <span class="cct-credits">2 credits</span>
+        <span class="cct-note">Family archives, antique prints</span>
+      </div>
+      <div class="cct-row">
+        <span class="cct-tool">👤 Face Enhancer</span>
+        <span class="cct-credits">2 credits</span>
+        <span class="cct-note">Portraits, ID photos, weddings</span>
+      </div>
+    </div>
+
+    <!-- Pricing cards -->
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Starter</div>
+        <div class="price-amount"><sup>₹</sup>199</div>
+        <div class="price-usd">~$2.40 USD</div>
+        <div class="price-credits">20 Credits</div>
+        <ul class="price-features">
+          <li>20 Quick Crisp images, or</li>
+          <li>6 Wallpaper Pro images, or</li>
+          <li>10 restorer / face jobs</li>
+          <li>All image formats</li>
+          <li>High-res download</li>
+          <li>Credits never expire</li>
+        </ul>
+        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Get Started</a>
+        <div class="price-note">One-time purchase · No subscription</div>
+      </div>
+
+      <div class="price-card popular">
+        <div class="popular-badge">Most Popular</div>
+        <div class="price-name">Professional</div>
+        <div class="price-amount"><sup>₹</sup>499</div>
+        <div class="price-usd">~$5.99 USD</div>
+        <div class="price-credits">60 Credits</div>
+        <ul class="price-features">
+          <li>60 Quick Crisp images, or</li>
+          <li>20 Wallpaper Pro images, or</li>
+          <li>30 restorer / face jobs</li>
+          <li>All image formats</li>
+          <li>High-res download</li>
+          <li>Credits never expire</li>
+        </ul>
+        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Buy Professional</a>
+        <div class="price-note">One-time purchase · No subscription</div>
+      </div>
+
+      <div class="price-card">
+        <div class="price-name">Studio</div>
+        <div class="price-amount"><sup>₹</sup>999</div>
+        <div class="price-usd">~$11.99 USD</div>
+        <div class="price-credits">150 Credits</div>
+        <ul class="price-features">
+          <li>150 Quick Crisp images, or</li>
+          <li>50 Wallpaper Pro images, or</li>
+          <li>75 restorer / face jobs</li>
+          <li>All image formats</li>
+          <li>High-res download</li>
+          <li>Credits never expire</li>
+        </ul>
+        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Buy Studio</a>
+        <div class="price-note">One-time purchase · No subscription</div>
+      </div>
+    </div>
+
+    <!-- Compare table -->
+    <div style="margin-top:48px;">
+      <h3 style="font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:20px;text-align:center;">Why ProPrintIndia?</h3>
+      <div class="compare-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Others</th>
+              <th class="us">ProPrintIndia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>UPI / Indian payments</td><td class="cross">✕</td><td class="check us">✓</td></tr>
+            <tr><td>Credits never expire</td><td class="cross">✕ Monthly</td><td class="check us">✓ Forever</td></tr>
+            <tr><td>Pricing in ₹ INR</td><td class="cross">USD only</td><td class="check us">✓ INR + USD</td></tr>
+            <tr><td>Built for print output</td><td class="cross">Generic screen</td><td class="check us">✓ Print-first</td></tr>
+            <tr><td>Wallpaper Pro model</td><td class="cross">✕</td><td class="check us">✓</td></tr>
+            <tr><td>Old photo restoration</td><td class="cross">✕</td><td class="check us">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONTACT ── -->
+<section id="contact">
+  <div class="section-inner">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">Get in touch</h2>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>We're here to help</h3>
+        <p>Questions about a specific enhancement, bulk pricing for your print studio, or a technical issue — reach out and we'll respond within one business day.</p>
+        <div class="contact-detail">
+          <div class="contact-icon">📧</div>
+          <div class="contact-detail-text">
+            <div class="contact-detail-label">Email</div>
+            <div class="contact-detail-val">support@proprintindia.com</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">📍</div>
+          <div class="contact-detail-text">
+            <div class="contact-detail-label">Based in</div>
+            <div class="contact-detail-val">India · Serving printers nationwide</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">⏰</div>
+          <div class="contact-detail-text">
+            <div class="contact-detail-label">Response time</div>
+            <div class="contact-detail-val">Within 1 business day</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="contact-form" id="contact-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Your name</label>
+              <input type="text" id="cf-name" placeholder="Rahul Sharma" />
+            </div>
+            <div class="form-field">
+              <label>Email address</label>
+              <input type="email" id="cf-email" placeholder="rahul@printshop.in" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Subject</label>
+            <select id="cf-subject">
+              <option>I have a question about a tool</option>
+              <option>Payment / billing issue</option>
+              <option>Bulk pricing for my print studio</option>
+              <option>Technical problem</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Message</label>
+            <textarea id="cf-message" rows="4" placeholder="Tell us how we can help..."></textarea>
+          </div>
+          <button class="btn-primary btn-large" onclick="submitContact()" style="width:100%;padding:13px;">Send Message</button>
+        </div>
+        <div class="form-success" id="form-success">✅ Message sent! We'll get back to you within one business day.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a href="index.html" class="footer-logo">ProPrint<span>India</span></a>
+  <ul class="footer-links">
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="privacy.html">Privacy Policy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ProPrintIndia · Built for Indian printers</span>
+</footer>
+
+<!-- ── SCRIPTS ── -->
+<script>
+  /* ── NAV ── */
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+
+  /* ── BEFORE/AFTER SLIDER ── */
+  const slider = document.getElementById('ba-slider');
+  const afterImg = document.getElementById('ba-after');
+  const divider = document.getElementById('ba-divider');
+  const handle = document.getElementById('ba-handle');
+  let dragging = false;
+
+  function setSliderPos(x) {
+    const rect = slider.getBoundingClientRect();
+    let pct = Math.min(Math.max((x - rect.left) / rect.width, 0.05), 0.95);
+    afterImg.style.clipPath = `inset(0 ${(1 - pct) * 100}% 0 0)`;
+    divider.style.left = `${pct * 100}%`;
+    handle.style.left = `${pct * 100}%`;
+  }
+
+  slider.addEventListener('mousedown', e => { dragging = true; setSliderPos(e.clientX); });
+  slider.addEventListener('touchstart', e => { dragging = true; setSliderPos(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mousemove', e => { if (dragging) setSliderPos(e.clientX); });
+  document.addEventListener('touchmove', e => { if (dragging) setSliderPos(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('touchend', () => dragging = false);
+
+  /* ── TOOL SELECTOR ── */
+  let selectedTool = { key: 'quickcrisp', credits: 1 };
+  function selectTool(el) {
+    document.querySelectorAll('.tool-opt').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    selectedTool = { key: el.dataset.tool, credits: parseInt(el.dataset.credits) };
+    updateEnhanceBtn();
+  }
+
+  /* ── UPLOAD ── */
+  let selectedFile = null;
+  let resultBlob = null;
+
+  const uploadZone = document.getElementById('upload-zone');
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) setFile(f);
+  });
+
+  function handleFileSelect(input) {
+    if (input.files[0]) setFile(input.files[0]);
+  }
+
+  function setFile(f) {
+    selectedFile = f;
+    uploadZone.querySelector('h3').textContent = f.name;
+    uploadZone.querySelector('p').textContent = `${(f.size / 1024 / 1024).toFixed(2)} MB · Click to change`;
+    updateEnhanceBtn();
+  }
+
+  function updateEnhanceBtn() {
+    const btn = document.getElementById('enhance-btn');
+    btn.disabled = !selectedFile;
+    btn.textContent = selectedFile
+      ? `Enhance with ${selectedTool.key === 'quickcrisp' ? 'Quick Crisp' : selectedTool.key === 'wallpaperpro' ? 'Wallpaper Pro' : selectedTool.key === 'restorer' ? 'Old Photo Restorer' : 'Face Enhancer'} (${selectedTool.credits} credit${selectedTool.credits > 1 ? 's' : ''})`
+      : 'Select an image first';
+  }
+
+  function startEnhancement() {
+    if (!selectedFile) return;
+    document.getElementById('result-panel').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'block';
+    document.getElementById('enhance-btn').disabled = true;
+
+    const fill = document.getElementById('progress-fill');
+    const text = document.getElementById('progress-text');
+    let pct = 0;
+    const steps = selectedTool.key === 'wallpaperpro' ? 120 : selectedTool.key === 'restorer' ? 30 : selectedTool.key === 'faceenhancer' ? 20 : 8;
+    const interval = (steps * 1000) / 100;
+
+    const timer = setInterval(() => {
+      pct = Math.min(pct + 1, 95);
+      fill.style.width = pct + '%';
+      if (pct < 30) text.textContent = 'Uploading image...';
+      else if (pct < 60) text.textContent = 'AI processing...';
+      else if (pct < 90) text.textContent = 'Finalising details...';
+      else text.textContent = 'Almost done...';
+    }, interval);
+
+    // Simulate completion (replace with real API call)
+    setTimeout(() => {
+      clearInterval(timer);
+      fill.style.width = '100%';
+      text.textContent = 'Done!';
+      setTimeout(() => {
+        document.getElementById('progress-wrap').style.display = 'none';
+        document.getElementById('enhance-btn').disabled = false;
+        showResult();
+      }, 600);
+    }, steps * 1000);
+  }
+
+  function showResult() {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('result-before').src = e.target.result;
+      document.getElementById('result-after').src = e.target.result; // replace with actual enhanced URL
+      document.getElementById('result-panel').style.display = 'block';
+      resultBlob = selectedFile;
+    };
+    reader.readAsDataURL(selectedFile);
+  }
+
+  function downloadResult() {
+    if (!resultBlob) return;
+    const url = URL.createObjectURL(resultBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'proprintindia-enhanced-' + resultBlob.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ── PORTFOLIO ── */
+  const portfolioItems = [
+    { cat: 'poster', icon: '🖼', label: 'Event poster · Quick Crisp', sub: 'A2 outdoor banner' },
+    { cat: 'poster', icon: '🖼', label: 'Product banner · Quick Crisp', sub: 'Flex print 4×6ft' },
+    { cat: 'portrait', icon: '👤', label: 'Wedding portrait · Face Enhancer', sub: 'Album-ready 12×18"' },
+    { cat: 'portrait', icon: '👤', label: 'ID photo set · Face Enhancer', sub: 'Passport size' },
+    { cat: 'vintage', icon: '⏳', label: '1970s family photo · Restorer', sub: 'Scratch & fade repair' },
+    { cat: 'vintage', icon: '⏳', label: 'Antique wedding · Restorer', sub: 'Colour restoration' },
+    { cat: 'wallpaper', icon: '🌿', label: 'Botanical mural · Wallpaper Pro', sub: 'Full wall 10×8ft' },
+    { cat: 'wallpaper', icon: '🏔', label: 'Landscape mural · Wallpaper Pro', sub: 'Large format print' },
+  ];
+
+  function renderPortfolio(cat) {
+    const grid = document.getElementById('portfolio-grid');
+    const items = cat === 'all' ? portfolioItems : portfolioItems.filter(i => i.cat === cat);
+    grid.innerHTML = items.map(i => `
+      <div class="portfolio-item" data-cat="${i.cat}">
+        <div class="portfolio-placeholder"><span>${i.icon}</span><span style="color:var(--ink-soft);font-size:0.75rem">Sample image</span></div>
+        <div class="portfolio-item-label">${i.label}<br><span style="font-weight:400;font-size:0.75rem;opacity:0.8">${i.sub}</span></div>
+      </div>
+    `).join('');
+  }
+
+  function filterPortfolio(cat, btn) {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderPortfolio(cat);
+  }
+
+  renderPortfolio('all');
+
+  /* ── CONTACT ── */
+  function submitContact() {
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const msg = document.getElementById('cf-message').value.trim();
+    if (!name || !email || !msg) { alert('Please fill in name, email, and message.'); return; }
+    document.getElementById('contact-form').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  }
+
+  /* ── AUTH STATE ── */
+  // Supabase auth check on homepage
+  const _sb = window.supabase ? window.supabase.createClient(
+    'https://mhqlqnsymvfkqedqmhqy.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODgyMTEsImV4cCI6MjA5NjA2NDIxMX0.UZrSyhxM_T7qhEgA5OrqtLj8YvGsfIDrDY9Wu8OOm5o'
+  ) : null;
+
+  async function checkAuth() {
+    if (!_sb) return;
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session) {
+      const user = session.user;
+      const name = user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || user.email.split('@')[0];
+      // Load credits
+      const { data: creditsData } = await _sb.from('credits').select('balance').eq('user_id', user.id).single();
+      const credits = creditsData?.balance || 0;
+      // Show logged-in state
+      document.getElementById('nav-balance').style.display = 'inline-flex';
+      document.getElementById('balance-val').textContent = credits;
+      document.getElementById('nav-login').style.display = 'none';
+      document.getElementById('nav-signup').style.display = 'none';
+      document.getElementById('nav-dashboard').style.display = '';
+      document.getElementById('nav-logout').style.display = '';
+    }
+  }
+
+  async function handleLogout() {
+    if (_sb) await _sb.auth.signOut();
+    document.getElementById('nav-balance').style.display = 'none';
+    document.getElementById('nav-login').style.display = '';
+    document.getElementById('nav-signup').style.display = '';
+    document.getElementById('nav-dashboard').style.display = 'none';
+    document.getElementById('nav-logout').style.display = 'none';
+  }
+
+  checkAuth();
+</script>
+
+</body>
+</html>
