@@ -684,25 +684,14 @@
 
   // AUTH CHECK
   async function init() {
-    // Handle OAuth callback hash in URL first
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-      const { data, error } = await _supabase.auth.getSessionFromUrl({ reloadSession: true });
-      if (data?.session) {
-        currentUser = data.session.user;
-        history.replaceState(null, '', window.location.pathname);
-        setUserUI(currentUser);
-        await loadCredits();
-        loadHistory();
-        return;
-      }
-    }
-    // Normal session check
     const { data: { session } } = await _supabase.auth.getSession();
     if (!session) {
       window.location.href = 'login.html';
       return;
     }
     currentUser = session.user;
+    // Clean up URL hash
+    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
     setUserUI(currentUser);
     await loadCredits();
     loadHistory();
