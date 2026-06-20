@@ -796,6 +796,76 @@
       .tools-grid { grid-template-columns: 1fr; }
       .tool-selector { grid-template-columns: 1fr 1fr; }
     }
+    .ba-result-slider {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: ew-resize;
+  user-select: none;
+  margin-bottom: 14px;
+}
+.ba-result-slider img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.ba-result-after { clip-path: inset(0 50% 0 0); }
+.ba-result-divider {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 3px; background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.4);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.ba-result-handle {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px; height: 36px;
+  background: #fff; border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; pointer-events: none;
+}
+.ba-result-tags {
+  position: absolute; bottom: 10px; left: 0; right: 0;
+  display: flex; justify-content: space-between; padding: 0 12px;
+  pointer-events: none;
+}
+.ba-result-tag {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  background: rgba(0,0,0,0.55); color: #fff; padding: 3px 8px; border-radius: 5px;
+}
+    .enhance-grid {
+  align-items: stretch;
+}
+.enhance-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+.result-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.result-panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ba-result-slider {
+  flex: 1;
+  aspect-ratio: unset;
+  min-height: 280px;
+}
+#result-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -942,18 +1012,18 @@
       <div class="result-panel" id="result-panel">
         <div class="result-panel-header">✅ Enhancement complete</div>
         <div class="result-panel-body">
-          <div class="result-imgs">
-            <div class="result-img-wrap">
-              <img id="result-before" src="" alt="Before" />
-              <span class="result-img-label">Before</span>
-            </div>
-            <div class="result-img-wrap">
-              <img id="result-after" src="" alt="After" />
-              <span class="result-img-label">After</span>
-            </div>
-          </div>
-          <button class="download-btn" id="download-btn" onclick="downloadResult()">↓ Download Enhanced Image</button>
-        </div>
+  <div class="ba-result-slider" id="result-slider">
+    <img id="result-before" src="" alt="Before" />
+    <img id="result-after" class="ba-result-after" src="" alt="After" />
+    <div class="ba-result-divider" id="result-divider"></div>
+    <div class="ba-result-handle" id="result-handle">⟺</div>
+    <div class="ba-result-tags">
+      <span class="ba-result-tag">Before</span>
+      <span class="ba-result-tag">After</span>
+    </div>
+  </div>
+  <button class="download-btn" id="download-btn" onclick="downloadResult()">↓ Download Enhanced Image</button>
+</div>
       </div>
     </div>
   </div>
@@ -1183,8 +1253,7 @@
 
   /* ── UPLOAD ── */
   let selectedFile = null;
-  let resultBlob = null;
-
+  let resultAfterUrl = null;
   const uploadZone = document.getElementById('upload-zone');
   uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
   uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
@@ -1194,7 +1263,6 @@
     const f = e.dataTransfer.files[0];
     if (f && f.type.startsWith('image/')) setFile(f);
   });
-
   function handleFileSelect(input) {
     if (input.files[0]) setFile(input.files[0]);
   }
@@ -1214,62 +1282,143 @@
       : 'Select an image first';
   }
 
-  function startEnhancement() {
+  async function startEnhancement() {
     if (!selectedFile) return;
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { alert('Please log in first.'); window.location.href = 'login.html'; return; }
+    const userId = session.user.id;
+
     document.getElementById('result-panel').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'block';
     document.getElementById('enhance-btn').disabled = true;
 
     const fill = document.getElementById('progress-fill');
     const text = document.getElementById('progress-text');
-    let pct = 0;
-    const steps = selectedTool.key === 'wallpaperpro' ? 120 : 8;
-    const interval = (steps * 1000) / 100;
+    fill.style.width = '5%';
+    text.textContent = 'Uploading image...';
 
-    const timer = setInterval(() => {
-      pct = Math.min(pct + 1, 95);
-      fill.style.width = pct + '%';
-      if (pct < 30) text.textContent = 'Uploading image...';
-      else if (pct < 60) text.textContent = 'AI processing...';
-      else if (pct < 90) text.textContent = 'Finalising details...';
-      else text.textContent = 'Almost done...';
-    }, interval);
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(selectedFile);
+      });
 
-    // Simulate completion (replace with real API call)
-    setTimeout(() => {
-      clearInterval(timer);
-      fill.style.width = '100%';
-      text.textContent = 'Done!';
-      setTimeout(() => {
-        document.getElementById('progress-wrap').style.display = 'none';
-        document.getElementById('enhance-btn').disabled = false;
-        showResult();
-      }, 600);
-    }, steps * 1000);
+      const scale = selectedTool.key === 'wallpaperpro' ? 4 : 2;
+
+      const startRes = await fetch('/api/enhance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64, userId, scale })
+      });
+      const startData = await startRes.json();
+
+      if (!startRes.ok || !startData.success) {
+        throw new Error(startData.error || 'Enhancement failed to start.');
+      }
+
+      text.textContent = 'AI processing...';
+      fill.style.width = '30%';
+
+      const predictionId = startData.predictionId;
+      let attempts = 0;
+      const maxAttempts = 120;
+
+      const poll = async () => {
+        attempts++;
+        const pollRes = await fetch(`/api/poll?id=${predictionId}`);
+        const pollData = await pollRes.json();
+
+        if (pollData.status === 'succeeded') {
+          fill.style.width = '100%';
+          text.textContent = 'Done!';
+          resultAfterUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
+          await logEnhancement(userId, selectedTool.key, selectedFile.name, selectedTool.credits);
+          setTimeout(() => {
+            document.getElementById('progress-wrap').style.display = 'none';
+            document.getElementById('enhance-btn').disabled = false;
+            showResult(base64, resultAfterUrl);
+            refreshCreditsDisplay(startData.remainingCredits);
+          }, 400);
+          return;
+        }
+
+        if (pollData.status === 'failed' || pollData.status === 'canceled') {
+          throw new Error(pollData.error || 'Enhancement failed.');
+        }
+
+        if (attempts >= maxAttempts) {
+          throw new Error('Enhancement timed out. Please try again.');
+        }
+
+        const pct = Math.min(30 + attempts * 0.6, 95);
+        fill.style.width = pct + '%';
+        setTimeout(poll, 2000);
+      };
+
+      poll();
+
+    } catch (err) {
+      document.getElementById('progress-wrap').style.display = 'none';
+      document.getElementById('enhance-btn').disabled = false;
+      alert(err.message || 'Something went wrong.');
+    }
   }
 
-  function showResult() {
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('result-before').src = e.target.result;
-      document.getElementById('result-after').src = e.target.result; // replace with actual enhanced URL
-      document.getElementById('result-placeholder').style.display = 'none';
-      document.getElementById('result-panel').style.display = 'block';
-      resultBlob = selectedFile;
-    };
-    reader.readAsDataURL(selectedFile);
+  async function logEnhancement(userId, toolKey, filename, creditsUsed) {
+    const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro' };
+    try {
+      await sb.from('enhancements').insert({
+        user_id: userId,
+        tool: toolNames[toolKey],
+        filename: filename,
+        credits_used: creditsUsed
+      });
+    } catch (e) { console.error('Failed to log enhancement:', e); }
   }
 
-  function downloadResult() {
-    if (!resultBlob) return;
-    const url = URL.createObjectURL(resultBlob);
+  function refreshCreditsDisplay(remaining) {
+    const balEl = document.getElementById('balance-val');
+    if (balEl && typeof remaining === 'number') balEl.textContent = remaining;
+  }
+
+  function showResult(beforeUrl, afterUrl) {
+    document.getElementById('result-before').src = beforeUrl;
+    document.getElementById('result-after').src = afterUrl;
+    document.getElementById('result-placeholder').style.display = 'none';
+    document.getElementById('result-panel').style.display = 'block';
+
+    const slider = document.getElementById('result-slider');
+    const afterImg = document.getElementById('result-after');
+    const divider = document.getElementById('result-divider');
+    const handle = document.getElementById('result-handle');
+    let dragging = false;
+
+    function setPos(x) {
+      const rect = slider.getBoundingClientRect();
+      let pct = Math.min(Math.max((x - rect.left) / rect.width, 0.05), 0.95);
+      afterImg.style.clipPath = `inset(0 ${(1 - pct) * 100}% 0 0)`;
+      divider.style.left = `${pct * 100}%`;
+      handle.style.left = `${pct * 100}%`;
+    }
+    slider.onmousedown = e => { dragging = true; setPos(e.clientX); };
+    slider.ontouchstart = e => { dragging = true; setPos(e.touches[0].clientX); };
+    document.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
+    document.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX); });
+    document.addEventListener('mouseup', () => dragging = false);
+    document.addEventListener('touchend', () => dragging = false);
+  }
+
+  async function downloadResult() {
+    if (!resultAfterUrl) return;
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'proprintindia-enhanced-' + resultBlob.name;
+    a.href = resultAfterUrl;
+    a.download = 'proprintindia-enhanced.png';
+    a.target = '_blank';
     a.click();
-    URL.revokeObjectURL(url);
   }
-
   /* ── CONTACT ── */
   function submitContact() {
     const name = document.getElementById('cf-name').value.trim();
@@ -1282,19 +1431,19 @@
 
   /* ── AUTH STATE ── */
   // Supabase auth check on homepage
-  const _sb = window.supabase ? window.supabase.createClient(
+  const sb = window.supabase ? window.supabase.createClient(
     'https://mhqlqnsymvfkqedqmhqy.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocWxxbnN5bXZma3FlZHFtaHF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODgyMTEsImV4cCI6MjA5NjA2NDIxMX0.UZrSyhxM_T7qhEgA5OrqtLj8YvGsfIDrDY9Wu8OOm5o'
   ) : null;
 
   async function checkAuth() {
-    if (!_sb) return;
-    const { data: { session } } = await _sb.auth.getSession();
+    if (!sb) return;
+    const { data: { session } } = await sb.auth.getSession();
     if (session) {
       const user = session.user;
       const name = user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || user.email.split('@')[0];
       // Load credits
-      const { data: creditsData } = await _sb.from('credits').select('balance').eq('user_id', user.id).single();
+      const { data: creditsData } = await sb.from('credits').select('balance').eq('user_id', user.id).single();
       const credits = creditsData?.balance || 0;
       // Show logged-in state
       document.getElementById('nav-balance').style.display = 'inline-flex';
@@ -1312,7 +1461,7 @@
   }
 
   async function handleLogout() {
-    if (_sb) await _sb.auth.signOut();
+    if (sb) await sb.auth.signOut();
     document.getElementById('nav-balance').style.display = 'none';
     document.getElementById('nav-login').style.display = '';
     document.getElementById('nav-signup').style.display = '';
