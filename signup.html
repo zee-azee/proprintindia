@@ -224,12 +224,12 @@
     const firstName = document.getElementById('first-name').value.trim();
     const lastName = document.getElementById('last-name').value.trim();
     try {
-      const { data, error } = await sb.auth.signUp({
-        email, password,
-        options: { data: { first_name: firstName, last_name: lastName } }
-      });
-      if (error) throw error;
-      await sb.from('credits').insert({ user_id: data.user.id, balance: 0 });
+     const { data, error } = await sb.auth.signUp({
+  email, password,
+  options: { data: { first_name: firstName, last_name: lastName } }
+});
+if (error) throw error;
+await sb.from('profiles').insert({ id: data.user.id, credits: 0 });
       showAlert('success', 'Account created! Check your email to confirm, then log in.');
       setLoading(false);
     } catch (err) {
