@@ -2,98 +2,85 @@ import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-"https://mhqlqnsymvfkqedqmhqy.supabase.co",
-process.env.SUPABASE_SERVICE_ROLE_KEY
+  "https://mhqlqnsymvfkqedqmhqy.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+const PLANS = {
+  starter:      { amount: 199, credits: 20 },
+  professional: { amount: 499, credits: 60 },
+  studio:       { amount: 999, credits: 150 },
+};
+
 export default async function handler(req, res) {
- 
   if (req.method !== "POST") {
-    return res.status(405).json({
-      success: false,
-      error: "Method not allowed"
-    });
+    return res.status(405).json({ success: false, error: "Method not allowed" });
   }
-try {
-console.log("BODY:", req.body);
 
-const {
-  razorpay_order_id,
-  razorpay_payment_id,
-  razorpay_signature,
-  amount,
-  userId
-} = req.body;
-const expectedSignature = crypto
-  .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-  .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-  .digest("hex");
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      plan,
+      userId,
+    } = req.body;
 
-if (expectedSignature !== razorpay_signature) {
-  return res.status(400).json({
-    success: false,
-    error: "Invalid payment signature"
-  });
-}
+    const selected = PLANS[plan];
+    if (!selected) {
+      return res.status(400).json({ success: false, error: "Invalid plan" });
+    }
 
-let creditsToAdd = 0;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
 
-switch (Number(amount)) {
-  case 199:
-    creditsToAdd = 20;
-    break;
+    if (expectedSignature !== razorpay_signature) {
+      await supabase.from("transactions").insert({
+        user_id: userId,
+        razorpay_order_id,
+        razorpay_payment_id,
+        amount_inr: selected.amount * 100,
+        credits: selected.credits,
+        status: "failed",
+      });
+      return res.status(400).json({ success: false, error: "Invalid payment signature" });
+    }
 
-  case 499:
-    creditsToAdd = 60;
-    break;
+    const { data: profile, error: fetchErr } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("id", userId)
+      .single();
 
-  case 999:
-    creditsToAdd = 150;
-    break;
+    if (fetchErr) {
+      return res.status(500).json({ success: false, error: "Profile fetch failed" });
+    }
 
-  case 599:
-    creditsToAdd = 5;
-    break;
+    const currentCredits = profile?.credits || 0;
+    const newCredits = currentCredits + selected.credits;
 
-  case 1499:
-    creditsToAdd = 15;
-    break;
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({ credits: newCredits })
+      .eq("id", userId);
 
-  case 3499:
-    creditsToAdd = 40;
-    break;
-
-  default:
-    return res.status(400).json({
-      success: false,
-      error: "Invalid plan amount"
+    await supabase.from("transactions").insert({
+      user_id: userId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      amount_inr: selected.amount * 100,
+      credits: selected.credits,
+      status: updateErr ? "paid_credit_failed" : "paid",
     });
-}
 
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("credits")
-  .eq("id", userId)
-  .single();
+    if (updateErr) {
+      return res.status(500).json({ success: false, error: "Credit update failed — contact support" });
+    }
 
-const currentCredits = profile?.credits || 0;
-
-await supabase
-  .from("profiles")
-  .update({
-    credits: currentCredits + creditsToAdd
-  })
-  .eq("id", userId);
-
-return res.status(200).json({
-  success: true,
-  creditsAdded: creditsToAdd
-});
-
-} catch (err) {
-return res.status(500).json({
-success: false,
-error: err.message
-});
-}
+    return res.status(200).json({ success: true, creditsAdded: selected.credits });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 }
