@@ -310,15 +310,9 @@
     document.getElementById('stat-email').textContent = email;
     document.getElementById('stat-provider').textContent = provider === 'google' ? 'Google account' : 'Email account';
 
-    // Load credits
-    const { data: creditsData, error: creditsError } = await sb.from('credits').select('balance').eq('user_id', currentUser.id).single();
-    if (creditsError && creditsError.code === 'PGRST116') {
-      // No credits row found - create one with 10 free credits
-      await sb.from('credits').insert({ user_id: currentUser.id, balance: 0 });
-      userCredits = 0;
-    } else {
-      userCredits = creditsData?.balance || 0;
-    }
+  // Load credits from profiles table
+const { data: profileData, error: profileError } = await sb.from('profiles').select('credits').eq('id', currentUser.id).single();
+userCredits = profileData?.credits ?? 0;
     document.getElementById('nav-credits').textContent = userCredits;
     document.getElementById('stat-credits').textContent = userCredits;
 
