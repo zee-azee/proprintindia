@@ -1360,17 +1360,16 @@
     }
   }
 
-  async function logEnhancement(userId, toolKey, filename, creditsUsed) {
-    const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro' };
-    try {
-      await sb.from('enhancements').insert({
-        user_id: userId,
-        tool: toolNames[toolKey],
-        filename: filename,
-        credits_used: creditsUsed
-      });
-    } catch (e) { console.error('Failed to log enhancement:', e); }
-  }
+ async function logEnhancement(userId, toolKey, filename, creditsUsed) {
+  const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro' };
+  const { error } = await sb.from('enhancements').insert({
+    user_id: userId,
+    tool: toolNames[toolKey],
+    filename: filename,
+    credits_used: creditsUsed
+  });
+  if (error) console.error('Failed to log enhancement:', error);
+}
 
   function refreshCreditsDisplay(remaining) {
     const balEl = document.getElementById('balance-val');
