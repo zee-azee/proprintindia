@@ -867,6 +867,7 @@
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -1062,7 +1063,7 @@
           <li>High-res download</li>
           <li>Credits never expire</li>
         </ul>
-        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Get Started</a>
+       <button class="btn-primary" style="display:block;width:100%;text-align:center;padding:11px;border:none;cursor:pointer;" onclick="buyPlan('starter')">Get Started</button>
         <div class="price-note">One-time purchase · No subscription</div>
       </div>
 
@@ -1079,7 +1080,7 @@
           <li>High-res download</li>
           <li>Credits never expire</li>
         </ul>
-        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Buy Professional</a>
+      <button class="btn-primary" style="display:block;width:100%;text-align:center;padding:11px;border:none;cursor:pointer;" onclick="buyPlan('professional')">Buy Professional</button>
         <div class="price-note">One-time purchase · No subscription</div>
       </div>
 
@@ -1095,7 +1096,7 @@
           <li>High-res download</li>
           <li>Credits never expire</li>
         </ul>
-        <a href="signup.html" class="btn-primary" style="display:block;text-align:center;padding:11px;">Buy Studio</a>
+        <button class="btn-primary" style="display:block;width:100%;text-align:center;padding:11px;border:none;cursor:pointer;" onclick="buyPlan('studio')">Buy Studio</button>
         <div class="price-note">One-time purchase · No subscription</div>
       </div>
     </div>
@@ -1433,10 +1434,11 @@
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       const user = session.user;
+      window.currentUser = user;
       const name = user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || user.email.split('@')[0];
       // Load credits
-      const { data: creditsData } = await sb.from('credits').select('balance').eq('user_id', user.id).single();
-      const credits = creditsData?.balance || 0;
+     const { data: profileData } = await sb.from('profiles').select('credits').eq('id', user.id).single();
+const credits = profileData?.credits || 0;
       // Show logged-in state
       document.getElementById('nav-balance').style.display = 'inline-flex';
       document.getElementById('balance-val').textContent = credits;
@@ -1460,7 +1462,64 @@
     document.getElementById('nav-dashboard').style.display = 'none';
     document.getElementById('nav-logout').style.display = 'none';
   }
+async function buyPlan(plan) {
+  if (!window.currentUser) {
+    window.location.href = 'signup.html';
+    return;
+  }
 
+  try {
+    const orderRes = await fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    });
+    const order = await orderRes.json();
+
+    if (!order.orderId) {
+      alert('Could not start checkout. Please try again.');
+      return;
+    }
+
+    const options = {
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'ProPrintIndia',
+      description: plan.charAt(0).toUpperCase() + plan.slice(1) + ' Plan',
+      order_id: order.orderId,
+      handler: async function (response) {
+        const verifyRes = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            plan,
+            userId: window.currentUser.id,
+          }),
+        });
+        const result = await verifyRes.json();
+
+        if (result.success) {
+          alert(`✅ ${result.creditsAdded} credits added!`);
+          document.getElementById('balance-val').textContent =
+            Number(document.getElementById('balance-val').textContent) + result.creditsAdded;
+        } else {
+          alert('Payment verification failed. If money was deducted, contact support.');
+        }
+      },
+      prefill: { email: window.currentUser.email },
+      theme: { color: '#1A56FF' },
+    };
+
+    new Razorpay(options).open();
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong starting checkout.');
+  }
+}
   checkAuth();
 </script>
 
