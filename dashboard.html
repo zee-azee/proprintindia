@@ -7,7 +7,67 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  let selectedTool = null;
+  let selectedCost = 0;
+  let selectedFile = null;
+
+  function selectTool(el, tool, cost) {
+    document.querySelectorAll('.tool-card').forEach(c => { c.style.borderColor='#e5e7eb'; c.style.background='#fff'; });
+    el.style.borderColor = '#2563eb';
+    el.style.background = '#eff6ff';
+    selectedTool = tool;
+    selectedCost = cost;
+    document.getElementById('selected-tool-info').textContent = `Selected: ${el.querySelector('div[style*="font-weight:700"]').textContent} · ${cost} credit${cost>1?'s':''}`;
+    checkEnhanceReady();
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    checkEnhanceReady();
+  }
+
+  function checkEnhanceReady() {
+    const btn = document.getElementById('enhance-btn');
+    if (selectedTool && selectedFile) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  async function runEnhancement() {
+    if (!selectedTool || !selectedFile) return;
+    if (userCredits < selectedCost) { alert('Not enough credits. Please buy more.'); return; }
+    const btn = document.getElementById('enhance-btn');
+    btn.textContent = 'Enhancing...';
+    btn.disabled = true;
+    // Deduct credits
+    userCredits -= selectedCost;
+    document.getElementById('nav-credits').textContent = userCredits;
+    document.getElementById('stat-credits').textContent = userCredits;
+    await sb.from('profiles').update({ credits: userCredits }).eq('id', currentUser.id);
+    // Simulate (replace with real API later)
+    await new Promise(r => setTimeout(r, 2000));
+    btn.textContent = 'Enhancement complete! Download below.';
+    // Create download link
+    const a = document.createElement('a');
+    a.href = document.getElementById('preview-img').src;
+    a.download = 'enhanced_' + selectedFile.name;
+    a.style = 'display:block;text-align:center;margin-top:12px;color:#2563eb;font-weight:600;';
+    a.textContent = '⬇️ Download Enhanced Image';
+    document.getElementById('enhance-btn').after(a);
+  }
+
+</script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -249,7 +309,51 @@
     </div>
   </div>
 
-  <!-- HISTORY -->
+  
+<!-- TOOLS -->
+<div class="section-title" style="margin-top:32px;">Select a Tool</div>
+<div class="tools-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:32px;">
+  <div class="tool-card" onclick="selectTool(this,'quick-crisp',1)" style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:24px;cursor:pointer;transition:all 0.15s;">
+    <div style="font-size:2rem;margin-bottom:12px;">⚡</div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Quick Crisp</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">~5 seconds</div>
+    <div style="font-size:12px;font-weight:600;color:#2563eb;">1 Credit</div>
+  </div>
+  <div class="tool-card" onclick="selectTool(this,'wallpaper-pro',3)" style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:24px;cursor:pointer;transition:all 0.15s;">
+    <div style="font-size:2rem;margin-bottom:12px;">🖼️</div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Wallpaper Pro</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">8–12 minutes</div>
+    <div style="font-size:12px;font-weight:600;color:#2563eb;">3 Credits</div>
+  </div>
+  <div class="tool-card" onclick="selectTool(this,'old-photo-restorer',2)" style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:24px;cursor:pointer;transition:all 0.15s;">
+    <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Old Photo Restorer</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">~2 minutes</div>
+    <div style="font-size:12px;font-weight:600;color:#2563eb;">2 Credits</div>
+  </div>
+  <div class="tool-card" onclick="selectTool(this,'face-enhancer',2)" style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:24px;cursor:pointer;transition:all 0.15s;">
+    <div style="font-size:2rem;margin-bottom:12px;">👤</div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Face Enhancer</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">~1 minute</div>
+    <div style="font-size:12px;font-weight:600;color:#2563eb;">2 Credits</div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="section-title">Upload Image</div>
+<div class="panel-box" style="margin-bottom:32px;padding:24px;">
+  <div id="selected-tool-info" style="margin-bottom:16px;font-size:14px;color:#6b7280;">← Select a tool above first</div>
+  <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" style="border:2px dashed #e5e7eb;border-radius:10px;padding:40px;text-align:center;cursor:pointer;">
+    <span class="uicon">🖼️</span>
+    <h4>Click to upload image</h4>
+    <p>JPG, PNG, WEBP · Max 20MB</p>
+    <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(event)"/>
+  </div>
+  <img id="preview-img" style="display:none;width:100%;max-height:200px;object-fit:contain;border-radius:8px;margin-top:16px;" alt="Preview"/>
+  <button id="enhance-btn" onclick="runEnhancement()" disabled style="width:100%;margin-top:16px;padding:14px;background:#2563eb;color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;opacity:0.5;">Enhance Image</button>
+</div>
+
+<!-- HISTORY -->
   <div class="section-title">Enhancement History</div>
   <div class="panel-box" style="margin-bottom:40px;">
     <div id="history-wrap">
@@ -364,6 +468,66 @@ if (profileError) console.error('Credits error:', JSON.stringify(profileError));
 
   // ── START ──
   init();
+
+  let selectedTool = null;
+  let selectedCost = 0;
+  let selectedFile = null;
+
+  function selectTool(el, tool, cost) {
+    document.querySelectorAll('.tool-card').forEach(c => { c.style.borderColor='#e5e7eb'; c.style.background='#fff'; });
+    el.style.borderColor = '#2563eb';
+    el.style.background = '#eff6ff';
+    selectedTool = tool;
+    selectedCost = cost;
+    document.getElementById('selected-tool-info').textContent = `Selected: ${el.querySelector('div[style*="font-weight:700"]').textContent} · ${cost} credit${cost>1?'s':''}`;
+    checkEnhanceReady();
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    checkEnhanceReady();
+  }
+
+  function checkEnhanceReady() {
+    const btn = document.getElementById('enhance-btn');
+    if (selectedTool && selectedFile) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  async function runEnhancement() {
+    if (!selectedTool || !selectedFile) return;
+    if (userCredits < selectedCost) { alert('Not enough credits. Please buy more.'); return; }
+    const btn = document.getElementById('enhance-btn');
+    btn.textContent = 'Enhancing...';
+    btn.disabled = true;
+    // Deduct credits
+    userCredits -= selectedCost;
+    document.getElementById('nav-credits').textContent = userCredits;
+    document.getElementById('stat-credits').textContent = userCredits;
+    await sb.from('profiles').update({ credits: userCredits }).eq('id', currentUser.id);
+    // Simulate (replace with real API later)
+    await new Promise(r => setTimeout(r, 2000));
+    btn.textContent = 'Enhancement complete! Download below.';
+    // Create download link
+    const a = document.createElement('a');
+    a.href = document.getElementById('preview-img').src;
+    a.download = 'enhanced_' + selectedFile.name;
+    a.style = 'display:block;text-align:center;margin-top:12px;color:#2563eb;font-weight:600;';
+    a.textContent = '⬇️ Download Enhanced Image';
+    document.getElementById('enhance-btn').after(a);
+  }
+
 </script>
 
 </body>
