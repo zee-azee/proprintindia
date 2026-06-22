@@ -312,7 +312,9 @@
 
   // Load credits from profiles table
 const { data: profileData, error: profileError } = await sb.from('profiles').select('credits').eq('id', currentUser.id).single();
-userCredits = profileData?.credits ?? 0;
+if (profileError) console.error('Credits error:', JSON.stringify(profileError));
+    userCredits = profileData?.credits ?? 0;
+    console.log('Credits loaded:', userCredits, 'for user:', currentUser.id);
     document.getElementById('nav-credits').textContent = userCredits;
     document.getElementById('stat-credits').textContent = userCredits;
 
