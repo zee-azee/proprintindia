@@ -1334,7 +1334,7 @@
           fill.style.width = '100%';
           text.textContent = 'Done!';
           resultAfterUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
-          await logEnhancement(userId, selectedTool.key, selectedFile.name, selectedTool.credits);
+         await logEnhancement(userId, selectedTool.key, selectedFile.name, selectedTool.credits, resultAfterUrl);
           setTimeout(() => {
             document.getElementById('progress-wrap').style.display = 'none';
             document.getElementById('enhance-btn').disabled = false;
@@ -1366,17 +1366,17 @@
     }
   }
 
- async function logEnhancement(userId, toolKey, filename, creditsUsed) {
+ async function logEnhancement(userId, toolKey, filename, creditsUsed, resultUrl) {
   const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro' };
   const { error } = await sb.from('enhancements').insert({
     user_id: userId,
     tool: toolNames[toolKey],
     filename: filename,
-    credits_used: creditsUsed
+    credits_used: creditsUsed,
+    result_url: resultUrl
   });
   if (error) console.error('Failed to log enhancement:', error);
 }
-
   function refreshCreditsDisplay(remaining) {
     const balEl = document.getElementById('balance-val');
     if (balEl && typeof remaining === 'number') balEl.textContent = remaining;
