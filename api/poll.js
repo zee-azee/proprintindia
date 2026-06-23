@@ -32,6 +32,21 @@ export default async function handler(req, res) {
     );
 
     const data = await pollRes.json();
+    if (data.status === 'failed') {
+
+  await supabase
+    .from('enhancements')
+    .update({
+      status: 'failed'
+    })
+    .eq('prediction_id', id);
+
+  return res.status(200).json({
+    status: 'failed',
+    error: data.error
+  });
+
+}
 
     // Prediction completed
     if (data.status === 'succeeded' && data.output) {
@@ -59,6 +74,13 @@ export default async function handler(req, res) {
       const { data: publicData } = supabase.storage
         .from('enhanced-images')
         .getPublicUrl(fileName);
+      await supabase
+  .from('enhancements')
+  .update({
+    status: 'completed',
+    result_url: publicData.publicUrl
+  })
+  .eq('prediction_id', id);
 
       return res.status(200).json({
         status: 'succeeded',
