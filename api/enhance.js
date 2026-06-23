@@ -43,6 +43,16 @@ export default async function handler(req, res) {
     });
 
     const prediction = await startRes.json();
+    await supabase
+  .from('enhancements')
+  .insert({
+    user_id: userId,
+    prediction_id: prediction.id,
+    filename: 'uploaded-image',
+    tool: scale === 4 ? 'Wallpaper Pro' : 'Quick Crisp',
+    status: 'processing',
+    credits_used: scale === 4 ? 3 : 1
+  });
 
     if (!prediction?.id) throw new Error('Replicate did not return a prediction ID.');
 
