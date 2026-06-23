@@ -1,4 +1,4 @@
-const replicateToken = process.env.REPLICATE_API_TOKEN;
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -13,6 +13,9 @@ export default async function handler(req, res) {
   }
 
   const { id, userId } = req.query;
+  if (!userId) {
+  return res.status(400).json({ error: 'No user ID provided.' });
+}
 
   if (!id) {
     return res.status(400).json({ error: 'No prediction ID provided.' });
