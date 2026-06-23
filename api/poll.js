@@ -1,25 +1,79 @@
 const replicateToken = process.env.REPLICATE_API_TOKEN;
+import { createClient } from '@supabase/supabase-js';
 
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const replicateToken = process.env.REPLICATE_API_TOKEN;
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed.' });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed.' });
+  }
 
-  const { id } = req.query;
-  if (!id) return res.status(400).json({ error: 'No prediction ID provided.' });
+  const { id, userId } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'No prediction ID provided.' });
+  }
 
   try {
-    const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
-      headers: { 'Authorization': `Token ${replicateToken}` }
-    });
+    const pollRes = await fetch(
+      `https://api.replicate.com/v1/predictions/${id}`,
+      {
+        headers: {
+          Authorization: `Token ${replicateToken}`,
+        },
+      }
+    );
 
     const data = await pollRes.json();
 
+    // Prediction completed
+    if (data.status === 'succeeded' && data.output) {
+      const replicateUrl = Array.isArray(data.output)
+        ? data.output[0]
+        : data.output;
+
+      // Download image from Replicate
+      const imageRes = await fetch(replicateUrl);
+      const imageBuffer = await imageRes.arrayBuffer();
+
+      // Upload to Supabase Storage
+      const fileName = `${userId}/${Date.now()}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('enhanced-images')
+        .upload(fileName, imageBuffer, {
+          contentType: 'image/png',
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicData } = supabase.storage
+        .from('enhanced-images')
+        .getPublicUrl(fileName);
+
+      return res.status(200).json({
+        status: 'succeeded',
+        output: publicData.publicUrl,
+        error: null,
+      });
+    }
+
     return res.status(200).json({
       status: data.status,
-      output: data.output || null,
-      error: data.error || null
+      output: null,
+      error: data.error || null,
     });
 
   } catch (err) {
-    return res.status(500).json({ error: 'Poll failed.', details: err.message });
+    return res.status(500).json({
+      error: 'Poll failed.',
+      details: err.message,
+    });
   }
 }
