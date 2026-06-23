@@ -1327,7 +1327,9 @@
 
       const poll = async () => {
         attempts++;
-        const pollRes = await fetch(`/api/poll?id=${predictionId}`);
+       const pollRes = await fetch(
+  `/api/poll?id=${predictionId}&userId=${userId}`
+);
         const pollData = await pollRes.json();
 
         if (pollData.status === 'succeeded') {
