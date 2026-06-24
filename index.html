@@ -1426,13 +1426,27 @@ async function logEnhancement(userId, toolKey, filename, creditsUsed, resultUrl)
     a.click();
   }
   /* ── CONTACT ── */
-  function submitContact() {
+  async function submitContact() {
     const name = document.getElementById('cf-name').value.trim();
     const email = document.getElementById('cf-email').value.trim();
+    const subject = document.getElementById('cf-subject').value.trim();
     const msg = document.getElementById('cf-message').value.trim();
     if (!name || !email || !msg) { alert('Please fill in name, email, and message.'); return; }
-    document.getElementById('contact-form').style.display = 'none';
-    document.getElementById('form-success').style.display = 'block';
+    try {
+      const res = await fetch('https://formspree.io/f/xaqgyjbj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message: msg })
+      });
+      if (res.ok) {
+        document.getElementById('contact-form').style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    } catch(e) {
+      alert('Network error. Please try again.');
+    }
   }
 
   /* ── AUTH STATE ── */
