@@ -1266,12 +1266,18 @@
     if (input.files[0]) setFile(input.files[0]);
   }
 
-  function setFile(f) {
-    selectedFile = f;
-    uploadZone.querySelector('h3').textContent = f.name;
-    uploadZone.querySelector('p').textContent = `${(f.size / 1024 / 1024).toFixed(2)} MB · Click to change`;
-    updateEnhanceBtn();
-  }
+ function setFile(f) {
+  selectedFile = f;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadZone.innerHTML = `
+      <img src="${e.target.result}" style="max-height:180px;max-width:100%;border-radius:8px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;" />
+      <p style="font-size:0.82rem;color:#777;">${f.name} · ${(f.size/1024/1024).toFixed(2)} MB · Click to change</p>
+    `;
+  };
+  reader.readAsDataURL(f);
+  updateEnhanceBtn();
+} 
 
   function updateEnhanceBtn() {
     const btn = document.getElementById('enhance-btn');
