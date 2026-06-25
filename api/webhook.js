@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -11,59 +10,55 @@ export default async function handler(req, res) {
 
   try {
     const event = req.body;
+    const predictionId = event.id;
+    const status = event.status;
 
-    // Only handle succeeded predictions
-    if (event.status !== "succeeded") return res.status(200).end();
+    if (!predictionId) return res.status(400).end();
 
-    const { id, output, input } = event;
-    const userId = input?.userId;
-    const tool = input?.tool;
-    const filename = input?.filename;
-    const creditsToDeduct = input?.credits;
+    // Always update prediction status first
+    const resultUrl = status === "succeeded"
+      ? (Array.isArray(event.output) ? event.output[0] : event.output)
+      : null;
 
-    if (!userId || !creditsToDeduct) return res.status(400).end();
-
-    const resultUrl = Array.isArray(output) ? output[0] : output;
-
-    // Deduct credits
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("credits")
-      .eq("id", userId)
-      .single();
-
-    const currentCredits = profile?.credits || 0;
-    if (currentCredits < creditsToDeduct) {
-      console.error("Insufficient credits for webhook completion");
-      return res.status(200).end();
-    }
-
-    await supabase
-      .from("profiles")
-      .update({ credits: currentCredits - creditsToDeduct })
-      .eq("id", userId);
-
-    // Log enhancement
-    await supabase.from("enhancements").insert({
-      user_id: userId,
-      tool: tool,
-      filename: filename,
-      credits_used: creditsToDeduct,
-      result_url: resultUrl,
-    });
-
-    // Store result so frontend can pick it up
     await supabase.from("predictions").upsert({
-      id: id,
-      user_id: userId,
-      status: "succeeded",
+      id: predictionId,
+      status,
       result_url: resultUrl,
-      completed_at: new Date().toISOString(),
+      completed_at: new Date().toISOString()
     });
 
-    return res.status(200).end();
-  } catch (err) {
-    console.error("Webhook error:", err);
-    return res.status(500).end();
-  }
-}
+    // Only deduct credits and log on success
+    if (status === "succeeded" && resultUrl) {
+
+      // Get prediction metadata from our DB
+      const { data: pred } = await supabase
+        .from("predictions")
+        .select("*")
+        .eq("id", predictionId)
+        .single();
+
+      if (!pred?.user_id) {
+        console.error("No prediction found for id:", predictionId);
+        return res.status(200).end();
+      }
+
+      // Get current credits
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("credits")
+        .eq("id", pred.user_id)
+        .single();
+
+      const currentCredits = profile?.credits || 0;
+      const creditsToDeduct = pred.credits_required || 1;
+
+      if (currentCredits < creditsToDeduct) {
+        console.error("Insufficient credits for webhook completion");
+        return res.status(200).end();
+      }
+
+      // Deduct credits
+      await supabase
+        .from("profiles")
+        .update({ credits: currentCredits - creditsToDeduct })
+        .eq("id",
