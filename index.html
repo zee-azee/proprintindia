@@ -1326,7 +1326,7 @@
       });
       const startData = await startRes.json();
 
-      if (!startRes.ok || !startData.success) {
+      if (!startRes.ok || !startData.predictionId) {
         throw new Error(startData.error || 'Enhancement failed to start.');
       }
 
