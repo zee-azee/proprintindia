@@ -8,14 +8,12 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  res.status(200).end();
-
   try {
     const event = req.body;
     const predictionId = event.id;
     const status = event.status;
 
-    if (!predictionId) return;
+    if (!predictionId) return res.status(400).end();
 
     const resultUrl =
       status === "succeeded"
@@ -24,7 +22,7 @@ export default async function handler(req, res) {
           : event.output
         : null;
 
-    // ✅ UPDATE not upsert — preserves user_id and credits_required
+    // Do all DB work FIRST, then respond
     const { data: pred, error: updateError } = await supabase
       .from("predictions")
       .update({
@@ -36,18 +34,9 @@ export default async function handler(req, res) {
       .select("*")
       .single();
 
-   console.error("WEBHOOK DEBUG:", JSON.stringify({ predictionId, status, updateError, pred }));
-if (updateError || !pred) {
-      console.error("Failed to update prediction:", updateError);
-      return;
-    }
+    console.log("Update result:", JSON.stringify({ pred, updateError }));
 
-    if (status === "succeeded" && resultUrl) {
-      if (!pred.user_id) {
-        console.error("No user_id on prediction:", predictionId);
-        return;
-      }
-
+    if (pred && status === "succeeded" && resultUrl && pred.user_id) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("credits")
@@ -57,19 +46,20 @@ if (updateError || !pred) {
       const currentCredits = profile?.credits || 0;
       const creditsToDeduct = pred.credits_required || 1;
 
-      if (currentCredits < creditsToDeduct) {
-        console.error("Insufficient credits for user:", pred.user_id);
-        return;
+      if (currentCredits >= creditsToDeduct) {
+        await supabase
+          .from("profiles")
+          .update({ credits: currentCredits - creditsToDeduct })
+          .eq("id", pred.user_id);
+        console.log(`✅ Credits deducted: -${creditsToDeduct}`);
       }
-
-      await supabase
-        .from("profiles")
-        .update({ credits: currentCredits - creditsToDeduct })
-        .eq("id", pred.user_id);
-
-      console.log(`✅ Credits deducted for user ${pred.user_id}: -${creditsToDeduct}`);
     }
+
+    // Respond AFTER all work is done
+    return res.status(200).end();
+
   } catch (err) {
-    console.error("Webhook processing error:", err);
+    console.error("Webhook error:", err);
+    return res.status(200).end();
   }
 }
