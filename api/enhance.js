@@ -55,9 +55,7 @@ export default async function handler(req, res) {
         };
 
     // Webhook URL — Replicate will POST here when done
-    const webhookUrl = `${process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.SITE_URL}/api/webhook`;
+   const webhookUrl = `${process.env.SITE_URL}/api/webhook`;
 
     // Start Replicate prediction with webhook
     const startRes = await fetch('https://api.replicate.com/v1/predictions', {
