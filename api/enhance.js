@@ -1,5 +1,7 @@
+import Replicate from "replicate";
 import { createClient } from "@supabase/supabase-js";
 
+const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -8,70 +10,57 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  // ✅ Respond immediately so Replicate marks webhook as delivered
-  res.status(200).end();
-
   try {
-    const event = req.body;
-    const predictionId = event.id;
-    const status = event.status;
+    const { imageBase64, tool, userId } = req.body;
 
-    if (!predictionId) return;
+    if (!imageBase64 || !userId) {
+      return res.status(400).json({ error: "Missing imageBase64 or userId" });
+    }
 
-    const resultUrl =
-      status === "succeeded"
-        ? Array.isArray(event.output)
-          ? event.output[0]
-          : event.output
-        : null;
+    // Set credits based on tool
+    const creditsRequired = tool === "wallpaper" ? 3 : 1;
 
-    // ✅ UPDATE (not upsert) — preserves user_id and credits_required
-    // Then select the full row back in one query
-    const { data: pred, error: updateError } = await supabase
-      .from("predictions")
-      .update({
-        status,
-        result_url: resultUrl,
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", predictionId)
-      .select("*")
+    // Check user has enough credits
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("credits")
+      .eq("id", userId)
       .single();
 
-    if (updateError || !pred) {
-      console.error("Failed to update prediction:", updateError);
-      return;
+    if (!profile || profile.credits < creditsRequired) {
+      return res.status(402).json({ error: "Insufficient credits" });
     }
 
-    // Only deduct credits on success
-    if (status === "succeeded" && resultUrl) {
-      if (!pred.user_id) {
-        console.error("No user_id on prediction:", predictionId);
-        return;
-      }
+    // Choose model based on tool
+    const model =
+      tool === "wallpaper"
+        ? "philz1337x/clarity-upscaler:dfad4170"
+        : "philz1337x/clarity-upscaler:dfad4170";
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("credits")
-        .eq("id", pred.user_id)
-        .single();
+    // Start Replicate prediction
+    const prediction = await replicate.predictions.create({
+      version: "dfad4170931de1b2f247c95419a9a44d970a5af9410dfea00e6811d86531a2e8",
+      input: {
+        image: imageBase64,
+        scale_factor: tool === "wallpaper" ? 4 : 2,
+      },
+      webhook: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`,
+      webhook_events_filter: ["completed"],
+    });
 
-      const currentCredits = profile?.credits || 0;
-      const creditsToDeduct = pred.credits_required || 1;
+    // Save prediction to DB with user_id and credits_required
+    await supabase.from("predictions").insert({
+      id: prediction.id,
+      user_id: userId,
+      status: "starting",
+      tool,
+      credits_required: creditsRequired,
+      created_at: new Date().toISOString(),
+    });
 
-      if (currentCredits < creditsToDeduct) {
-        console.error("Insufficient credits for user:", pred.user_id);
-        return;
-      }
-
-      await supabase
-        .from("profiles")
-        .update({ credits: currentCredits - creditsToDeduct })
-        .eq("id", pred.user_id);
-
-      console.log(`✅ Credits deducted for user ${pred.user_id}: -${creditsToDeduct}`);
-    }
+    return res.status(200).json({ predictionId: prediction.id });
   } catch (err) {
-    console.error("Webhook processing error:", err);
+    console.error("Enhance error:", err);
+    return res.status(500).json({ error: err.message });
   }
 }
