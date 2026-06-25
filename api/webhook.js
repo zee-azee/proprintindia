@@ -6,64 +6,129 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== "POST") {
+    return res.status(405).end();
+  }
 
   try {
-    const event = req.body;
+    const prediction = req.body;
 
-    // Only handle succeeded predictions
-    if (event.status !== "succeeded") return res.status(200).end();
+    const predictionId = prediction.id;
+    const status = prediction.status;
 
-    const { id, output, input } = event;
-    const userId = input?.userId;
-    const tool = input?.tool;
-    const filename = input?.filename;
-    const creditsToDeduct = input?.credits;
-
-    if (!userId || !creditsToDeduct) return res.status(400).end();
-
-    const resultUrl = Array.isArray(output) ? output[0] : output;
-
-    // Deduct credits
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("credits")
-      .eq("id", userId)
+    // Find prediction record
+    const { data: job, error } = await supabase
+      .from("predictions")
+      .select("*")
+      .eq("id", predictionId)
       .single();
 
-    const currentCredits = profile?.credits || 0;
-    if (currentCredits < creditsToDeduct) {
-      console.error("Insufficient credits for webhook completion");
+    if (error || !job) {
+      return res.status(404).json({
+        error: "Prediction not found",
+      });
+    }
+
+    // --------------------------
+    // FAILED
+    // --------------------------
+
+    if (status === "failed" || status === "canceled") {
+      await supabase
+        .from("predictions")
+        .update({
+          status,
+        })
+        .eq("id", predictionId);
+
       return res.status(200).end();
     }
 
-    await supabase
+    // --------------------------
+    // NOT FINISHED YET
+    // --------------------------
+
+    if (status !== "succeeded") {
+      await supabase
+        .from("predictions")
+        .update({
+          status,
+        })
+        .eq("id", predictionId);
+
+      return res.status(200).end();
+    }
+
+    // --------------------------
+    // DOWNLOAD IMAGE
+    // --------------------------
+
+    const output = Array.isArray(prediction.output)
+      ? prediction.output[0]
+      : prediction.output;
+
+    const imageResponse = await fetch(output);
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+
+    // --------------------------
+    // Upload to Storage
+    // --------------------------
+
+    const fileName = `${job.user_id}/${predictionId}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("enhanced-images")
+      .upload(fileName, imageBuffer, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: publicUrl } = supabase.storage
+      .from("enhanced-images")
+      .getPublicUrl(fileName);
+
+    // --------------------------
+    // Deduct Credits
+    // --------------------------
+
+    const { data: profile } = await supabase
       .from("profiles")
-      .update({ credits: currentCredits - creditsToDeduct })
-      .eq("id", userId);
+      .select("credits")
+      .eq("id", job.user_id)
+      .single();
 
-    // Log enhancement
-    await supabase.from("enhancements").insert({
-      user_id: userId,
-      tool,
-      filename,
-      credits_used: creditsToDeduct,
-      result_url: resultUrl,
-    });
+    if (profile) {
+      await supabase
+        .from("profiles")
+        .update({
+          credits: profile.credits - job.credits_required,
+        })
+        .eq("id", job.user_id);
+    }
 
-    // Update prediction so frontend polling picks it up
-    await supabase.from("predictions").upsert({
-      id,
-      user_id: userId,
-      status: "succeeded",
-      result_url: resultUrl,
-      completed_at: new Date().toISOString(),
-    });
+    // --------------------------
+    // Update Prediction
+    // --------------------------
+
+    await supabase
+      .from("predictions")
+      .update({
+        status: "succeeded",
+        result_url: publicUrl.publicUrl,
+      })
+      .eq("id", predictionId);
 
     return res.status(200).end();
-
   } catch (err) {
-    console.error("Webhook error:", err);
-    return res.status(500).end();
+    console.error(err);
+
+    return res.status(500).json({
+      error: err.message,
+    });
   }
 }
