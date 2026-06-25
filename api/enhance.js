@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     // Start Replicate prediction
     const predictionParams = {
       input: predictionInput,
-      webhook: `https://proprintindia.com/api/webhook`,
+      webhook: `https://www.proprintindia.com/api/webhook`,
       webhook_events_filter: ["completed"],
     };
 
