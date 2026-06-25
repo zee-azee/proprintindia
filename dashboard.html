@@ -316,12 +316,12 @@ userCredits = profileData?.credits ?? 0;
 document.getElementById('nav-credits').textContent = userCredits;
 document.getElementById('stat-credits').textContent = userCredits;
     // Load history
-    const { data: history } = await sb.from('enhancements').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
-    renderHistory(history || []);
+ const { data: history } = await sb.from('predictions').select('*').eq('user_id', currentUser.id).eq('status', 'succeeded').order('created_at', { ascending: false }).limit(20);
+renderHistory(history || []);
 
-    // Stats
-    const enhanced = history?.length || 0;
-    const creditsUsed = history?.reduce((sum, h) => sum + (h.credits_used || 0), 0) || 0;
+// Stats
+const enhanced = history?.length || 0;
+const creditsUsed = history?.reduce((sum, h) => sum + (h.credits_required || 0), 0) || 0;
     document.getElementById('stat-enhanced').textContent = enhanced;
     document.getElementById('stat-used').textContent = creditsUsed;
 
