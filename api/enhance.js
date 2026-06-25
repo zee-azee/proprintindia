@@ -17,39 +17,62 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing imageBase64 or userId" });
     }
 
-    // Set credits based on tool
-    const creditsRequired = tool === "wallpaper" ? 3 : 1;
+    // Credits per tool
+    const creditsRequired = tool === "wallpaperpro" ? 10 : 1;
 
-    // Check user has enough credits
-    const { data: profile } = await supabase
+    // Check credits
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("credits")
       .eq("id", userId)
       .single();
 
-    if (!profile || profile.credits < creditsRequired) {
+    if (profileError || !profile) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (profile.credits < creditsRequired) {
       return res.status(402).json({ error: "Insufficient credits" });
     }
 
-    // Choose model based on tool
-    const model =
-      tool === "wallpaper"
-        ? "philz1337x/clarity-upscaler:dfad4170"
-        : "philz1337x/clarity-upscaler:dfad4170";
+    // Build input based on tool
+    let predictionInput;
+    let modelName;
+
+    if (tool === "wallpaperpro") {
+      modelName = "philz1337x/clarity-upscaler";
+      predictionInput = {
+        image: imageBase64,
+        scale_factor: 4,
+        dynamic: 6,
+        creativity: 0.35,
+        resemblance: 0.6,
+        tiling_width: 112,
+        tiling_height: 144,
+        num_inference_steps: 30,
+        scheduler: "DPM++ 3M SDE Karras",
+        negative_prompt: "blur, lowres, bad anatomy, jpeg artifacts, watermark",
+      };
+    } else {
+      // quickcrisp
+      modelName = "nightmareai/real-esrgan";
+      predictionInput = {
+        image: imageBase64,
+        scale: 2,
+        face_enhance: false,
+      };
+    }
 
     // Start Replicate prediction
     const prediction = await replicate.predictions.create({
-      version: "dfad4170931de1b2f247c95419a9a44d970a5af9410dfea00e6811d86531a2e8",
-      input: {
-        image: imageBase64,
-        scale_factor: tool === "wallpaper" ? 4 : 2,
-      },
-    webhook: `https://proprintindia.com/api/webhook`,
+      model: modelName,
+      input: predictionInput,
+      webhook: `https://proprintindia.com/api/webhook`,
       webhook_events_filter: ["completed"],
     });
 
-    // Save prediction to DB with user_id and credits_required
-    await supabase.from("predictions").insert({
+    // Save prediction to DB
+    const { error: insertError } = await supabase.from("predictions").insert({
       id: prediction.id,
       user_id: userId,
       status: "starting",
@@ -58,7 +81,13 @@ export default async function handler(req, res) {
       created_at: new Date().toISOString(),
     });
 
+    if (insertError) {
+      console.error("Failed to insert prediction:", insertError);
+      return res.status(500).json({ error: "Failed to save prediction" });
+    }
+
     return res.status(200).json({ predictionId: prediction.id });
+
   } catch (err) {
     console.error("Enhance error:", err);
     return res.status(500).json({ error: err.message });
