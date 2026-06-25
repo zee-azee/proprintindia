@@ -43,12 +43,11 @@ export default async function handler(req, res) {
 
     // Build input based on tool
     let predictionInput;
-    let modelVersion;
-    let modelName;
+    let modelVersion = null;
+    let modelName = null;
 
     if (tool === "wallpaperpro") {
       modelName = "philz1337x/clarity-upscaler";
-      modelVersion = null;
       predictionInput = {
         image: imageBase64,
         scale_factor: 4,
@@ -62,27 +61,22 @@ export default async function handler(req, res) {
         negative_prompt: "blur, lowres, bad anatomy, jpeg artifacts, watermark",
       };
     } else if (tool === "faceenhancer") {
-      modelName = null;
-      modelVersion = "7de2ea26c616d5bf2245ad0d5e24f0ff9a6204578a5c876db53142edd9d2cd56";
+      modelName = "tencentarc/gfpgan";
       predictionInput = {
         image: imageBase64,
-        fidelity: 0.75,
-        upscale: 2,
-        face_upsample: true,
-        background_enhance: true,
+        scale: 2,
+        version: "v1.4",
       };
     } else {
       // quickcrisp
-      modelName = null;
-      modelVersion = "7135ff723ecea89c0f67afcd51e4904904586e351093465bdc7beed45941b3e0";
+      modelName = "philz1337x/clarity-upscaler";
       predictionInput = {
         image: imageBase64,
-        upscale_mode: "target",
-        target: 4,
-        enhance_details: true,
-        enhance_realism: true,
-        output_format: "jpg",
-        output_quality: 90,
+        scale_factor: 2,
+        num_inference_steps: 8,
+        creativity: 0.1,
+        resemblance: 0.9,
+        dynamic: 2,
       };
     }
 
