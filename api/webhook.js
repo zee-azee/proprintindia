@@ -8,7 +8,6 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  // ✅ Respond immediately so Replicate marks webhook as delivered
   res.status(200).end();
 
   try {
@@ -25,24 +24,26 @@ export default async function handler(req, res) {
           : event.output
         : null;
 
-    // Update prediction status
-    await supabase.from("predictions").upsert({
-      id: predictionId,
-      status,
-      result_url: resultUrl,
-      completed_at: new Date().toISOString(),
-    });
+    // ✅ UPDATE not upsert — preserves user_id and credits_required
+    const { data: pred, error: updateError } = await supabase
+      .from("predictions")
+      .update({
+        status,
+        result_url: resultUrl,
+        completed_at: new Date().toISOString(),
+      })
+      .eq("id", predictionId)
+      .select("*")
+      .single();
 
-    // Only deduct credits on success
+    if (updateError || !pred) {
+      console.error("Failed to update prediction:", updateError);
+      return;
+    }
+
     if (status === "succeeded" && resultUrl) {
-      const { data: pred } = await supabase
-        .from("predictions")
-        .select("*")
-        .eq("id", predictionId)
-        .single();
-
-      if (!pred?.user_id) {
-        console.error("No prediction found for id:", predictionId);
+      if (!pred.user_id) {
+        console.error("No user_id on prediction:", predictionId);
         return;
       }
 
@@ -56,11 +57,10 @@ export default async function handler(req, res) {
       const creditsToDeduct = pred.credits_required || 1;
 
       if (currentCredits < creditsToDeduct) {
-        console.error("Insufficient credits for webhook completion");
+        console.error("Insufficient credits for user:", pred.user_id);
         return;
       }
 
-      // Deduct credits
       await supabase
         .from("profiles")
         .update({ credits: currentCredits - creditsToDeduct })
