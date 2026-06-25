@@ -9,9 +9,15 @@ export default async function handler(req, res) {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { image, userId, scale = 2, filename = 'uploaded-image', tool = 'Quick Crisp' } = req.body || {};
-
-    if (!image) return res.status(400).json({ error: 'No image provided.' });
+   const {
+  imageBase64,
+  userId,
+  scale = 2,
+  filename = 'uploaded-image',
+  tool = 'Quick Crisp'
+} = req.body || {};
+    if (!imageBase64)
+  return res.status(400).json({ error: 'No image provided.' });
     if (!userId) return res.status(400).json({ error: 'No userId provided.' });
 
     const creditsRequired = scale === 4 ? 3 : 1;
@@ -37,7 +43,7 @@ export default async function handler(req, res) {
 
     const inputParams = scale === 4
       ? {
-          image,
+          image: imageBase64,
           scale_factor: 2,
           prompt: "masterpiece, best quality, highres, <lora:more_details:0.5> <lora:SDXLrender_v2.0:1>",
           negative_prompt: "(worst quality, low quality, normal quality:2)",
@@ -53,7 +59,7 @@ export default async function handler(req, res) {
           credits: creditsRequired
         }
       : {
-          image,
+          image: imageBase64,
           scale,
           // Pass metadata so webhook can read it
           userId,
