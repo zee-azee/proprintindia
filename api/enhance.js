@@ -69,14 +69,16 @@ export default async function handler(req, res) {
   };
 } else {
   // quickcrisp
-  modelVersion = "96c34bbe9aae48023bb102b0386f62a88ecd05bcdac34e95ca10857af055e895";
+  modelVersion = "7135ff723ecea89c0f67afcd51e4904904586e351093465bdc7beed45941b3e0";
+  modelName = null;
   predictionInput = {
     image: imageBase64,
-    scale_factor: 2,
-    num_inference_steps: 8,
-    creativity: 0.1,
-    resemblance: 0.9,
-    dynamic: 2,
+    upscale_mode: "target",
+    target: 4,
+    enhance_details: true,
+    enhance_realism: true,
+    output_format: "jpg",
+    output_quality: 90,
   };
 }
 
