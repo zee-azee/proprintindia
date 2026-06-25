@@ -46,39 +46,39 @@ export default async function handler(req, res) {
     let modelVersion = null;
     let modelName = null;
 
-    if (tool === "wallpaperpro") {
-      modelName = "philz1337x/clarity-upscaler";
-      predictionInput = {
-        image: imageBase64,
-        scale_factor: 4,
-        dynamic: 6,
-        creativity: 0.35,
-        resemblance: 0.6,
-        tiling_width: 112,
-        tiling_height: 144,
-        num_inference_steps: 30,
-        scheduler: "DPM++ 3M SDE Karras",
-        negative_prompt: "blur, lowres, bad anatomy, jpeg artifacts, watermark",
-      };
-    } else if (tool === "faceenhancer") {
-      modelName = "tencentarc/gfpgan";
-      predictionInput = {
-        image: imageBase64,
-        scale: 2,
-        version: "v1.4",
-      };
-    } else {
-      // quickcrisp
-      modelName = "philz1337x/clarity-upscaler";
-      predictionInput = {
-        image: imageBase64,
-        scale_factor: 2,
-        num_inference_steps: 8,
-        creativity: 0.1,
-        resemblance: 0.9,
-        dynamic: 2,
-      };
-    }
+  if (tool === "wallpaperpro") {
+  modelVersion = "96c34bbe9aae48023bb102b0386f62a88ecd05bcdac34e95ca10857af055e895";
+  predictionInput = {
+    image: imageBase64,
+    scale_factor: 4,
+    dynamic: 6,
+    creativity: 0.35,
+    resemblance: 0.6,
+    tiling_width: 112,
+    tiling_height: 144,
+    num_inference_steps: 30,
+    scheduler: "DPM++ 3M SDE Karras",
+    negative_prompt: "blur, lowres, bad anatomy, jpeg artifacts, watermark",
+  };
+} else if (tool === "faceenhancer") {
+  modelName = "tencentarc/gfpgan";
+  predictionInput = {
+    image: imageBase64,
+    scale: 2,
+    version: "v1.4",
+  };
+} else {
+  // quickcrisp
+  modelVersion = "96c34bbe9aae48023bb102b0386f62a88ecd05bcdac34e95ca10857af055e895";
+  predictionInput = {
+    image: imageBase64,
+    scale_factor: 2,
+    num_inference_steps: 8,
+    creativity: 0.1,
+    resemblance: 0.9,
+    dynamic: 2,
+  };
+}
 
     // Start Replicate prediction
     const predictionParams = {
