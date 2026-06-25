@@ -44,7 +44,7 @@ export default async function handler(req, res) {
         image: imageBase64,
         scale_factor: tool === "wallpaper" ? 4 : 2,
       },
-      webhook: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`,
+    webhook: `https://proprintindia.com/api/webhook`,
       webhook_events_filter: ["completed"],
     });
 
