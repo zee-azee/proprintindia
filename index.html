@@ -1362,14 +1362,13 @@ const predictionId = startData.predictionId;
       const poll = async () => {
         attempts++;
 
-       const { data: pred, error } = await sb
-  .from('enhancements')
+   const { data: pred, error } = await sb
+  .from('predictions')
   .select('status, result_url')
-  .eq('prediction_id', predictionId)
+  .eq('id', predictionId)
   .single();
 
-console.log('Polling:', pred, error);
-
+console.log(pred, error);
         if (pred?.status === 'succeeded' && pred?.result_url) {
           fill.style.width = '100%';
           text.textContent = 'Done!';
