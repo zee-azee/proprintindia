@@ -36,7 +36,8 @@ export default async function handler(req, res) {
       .select("*")
       .single();
 
-    if (updateError || !pred) {
+   console.error("WEBHOOK DEBUG:", JSON.stringify({ predictionId, status, updateError, pred }));
+if (updateError || !pred) {
       console.error("Failed to update prediction:", updateError);
       return;
     }
