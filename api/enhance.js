@@ -63,8 +63,8 @@ export default async function handler(req, res) {
 }  else if (tool === "faceenhancer") {
   modelVersion = "297a243ce8643961d52f745f9b6c8c1bd96850a51c92be5f43628a0d3e08321a";
   modelName = null;
-  predictionInput = {
-    image: imageBase64,
+ predictionInput = {
+    img: imageBase64,
     scale: 2,
     version: "v1.4",
   };
