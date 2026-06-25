@@ -316,7 +316,7 @@ userCredits = profileData?.credits ?? 0;
 document.getElementById('nav-credits').textContent = userCredits;
 document.getElementById('stat-credits').textContent = userCredits;
     // Load history
- const { data: history } = await sb.from('predictions').select('*').eq('user_id', currentUser.id).eq('status', 'succeeded').order('created_at', { ascending: false }).limit(20);
+const { data: history } = await sb.from('predictions').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(10);
 renderHistory(history || []);
 
 // Stats
