@@ -956,6 +956,18 @@
           <span class="tag">Full-wall</span>
           <span class="tag">Large Format</span>
         </div>
+        <div class="tool-card">
+  <span class="tool-credits">2 Credits / image</span>
+  <span class="tool-icon">🧑‍🎨</span>
+  <div class="tool-name">Face Enhancer</div>
+  <p class="tool-desc">Restore and sharpen faces in portraits, ID photos, wedding prints, and group photos. AI rebuilds facial details, smooths degradation, and upscales — perfect for printing sharp portraits.</p>
+  <div class="tool-meta">
+    <span class="tag tag-success">~15 seconds</span>
+    <span class="tag">Portraits</span>
+    <span class="tag">ID Photos</span>
+    <span class="tag">Weddings</span>
+  </div>
+</div>
       </div>
 
     </div>
@@ -983,6 +995,11 @@
             <div class="tool-opt-name">Wallpaper Pro</div>
             <div class="tool-opt-time">8–12 min · 10 credits</div>
           </div>
+          <div class="tool-opt" data-tool="faceenhancer" data-credits="2" onclick="selectTool(this)">
+  <div class="tool-opt-icon">🧑‍🎨</div>
+  <div class="tool-opt-name">Face Enhancer</div>
+  <div class="tool-opt-time">~15 sec · 2 credits</div>
+</div>
         </div>
 
         <!-- Upload zone -->
@@ -1282,8 +1299,9 @@
   function updateEnhanceBtn() {
     const btn = document.getElementById('enhance-btn');
     btn.disabled = !selectedFile;
-    btn.textContent = selectedFile
-      ? `Enhance with ${selectedTool.key === 'quickcrisp' ? 'Quick Crisp' : 'Wallpaper Pro'} (${selectedTool.credits} credit${selectedTool.credits > 1 ? 's' : ''})`
+const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro', faceenhancer: 'Face Enhancer' };
+btn.textContent = selectedFile
+  ? `Enhance with ${toolNames[selectedTool.key]} (${selectedTool.credits} credit${selectedTool.credits > 1 ? 's' : ''})`
       : 'Select an image first';
   }
 
