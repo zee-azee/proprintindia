@@ -1313,10 +1313,16 @@
 
       const scale = selectedTool.key === 'wallpaperpro' ? 4 : 2;
 
-      const startRes = await fetch('/api/enhance', {
+    const startRes = await fetch('/api/enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64, userId, scale })
+        body: JSON.stringify({
+          image: base64,
+          userId,
+          scale,
+          filename: selectedFile.name,
+          tool: selectedTool.key === 'quickcrisp' ? 'Quick Crisp' : 'Wallpaper Pro'
+        })
       });
       const startData = await startRes.json();
 
@@ -1326,43 +1332,62 @@
 
       text.textContent = 'AI processing...';
       fill.style.width = '30%';
+const predictionId = startData.predictionId;
 
-      const predictionId = startData.predictionId;
+      // Store session for use in polling
+      const { data: { session } } = await sb.auth.getSession();
+
+      // Poll Supabase predictions table instead of /api/poll
       let attempts = 0;
-      const maxAttempts = 120;
+      const maxAttempts = 180; // 6 min max
 
       const poll = async () => {
         attempts++;
-       const pollRes = await fetch(
-  `/api/poll?id=${predictionId}&userId=${userId}`
-);
-        const pollData = await pollRes.json();
 
-        if (pollData.status === 'succeeded') {
+        const { data: pred } = await sb
+          .from('predictions')
+          .select('status, result_url')
+          .eq('id', predictionId)
+          .single();
+
+        if (pred?.status === 'succeeded' && pred?.result_url) {
           fill.style.width = '100%';
           text.textContent = 'Done!';
-          resultAfterUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
-         await logEnhancement(userId, selectedTool.key, selectedFile.name, selectedTool.credits, resultAfterUrl);
+          resultAfterUrl = pred.result_url;
+
+          // Fetch updated credits from profiles
+          const { data: profileData } = await sb
+            .from('profiles')
+            .select('credits')
+            .eq('id', userId)
+            .single();
+
           setTimeout(() => {
             document.getElementById('progress-wrap').style.display = 'none';
             document.getElementById('enhance-btn').disabled = false;
-            showResult(base64, resultAfterUrl);
-            refreshCreditsDisplay(startData.remainingCredits);
+            showResult(base64, pred.result_url);
+            refreshCreditsDisplay(profileData?.credits ?? 0);
           }, 400);
           return;
         }
 
-        if (pollData.status === 'failed' || pollData.status === 'canceled') {
-          throw new Error(pollData.error || 'Enhancement failed.');
+        if (pred?.status === 'failed' || pred?.status === 'canceled') {
+          document.getElementById('progress-wrap').style.display = 'none';
+          document.getElementById('enhance-btn').disabled = false;
+          alert('Enhancement failed. No credits were deducted.');
+          return;
         }
 
         if (attempts >= maxAttempts) {
-          throw new Error('Enhancement timed out. Please try again.');
+          document.getElementById('progress-wrap').style.display = 'none';
+          document.getElementById('enhance-btn').disabled = false;
+          alert('This is taking longer than expected. Check your dashboard later — your image is still processing and credits will only be deducted on success.');
+          return;
         }
 
-        const pct = Math.min(30 + attempts * 0.6, 95);
+        const pct = Math.min(30 + attempts * 0.5, 95);
         fill.style.width = pct + '%';
-        setTimeout(poll, 2000);
+        setTimeout(poll, 3000);
       };
 
       poll();
