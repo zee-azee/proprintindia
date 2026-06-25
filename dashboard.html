@@ -350,8 +350,8 @@ const creditsUsed = history?.reduce((sum, h) => sum + (h.credits_required || 0),
               : '<span style="color:#777;font-size:0.78rem;">No preview</span>'}
           </td>
           <td>${i.tool || '–'}</td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.filename || '–'}</td>
-          <td>${i.credits_used || '–'}</td>
+<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</td>
+<td>${i.credits_required || '–'}</td>
           <td>${new Date(i.created_at).toLocaleDateString('en-IN')}</td>
           <td class="status-done">✓ Done</td>
         </tr>
