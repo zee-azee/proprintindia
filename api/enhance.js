@@ -60,8 +60,9 @@ export default async function handler(req, res) {
     scheduler: "DPM++ 3M SDE Karras",
     negative_prompt: "blur, lowres, bad anatomy, jpeg artifacts, watermark",
   };
-} else if (tool === "faceenhancer") {
-  modelName = "tencentarc/gfpgan";
+}  else if (tool === "faceenhancer") {
+  modelVersion = "297a243ce8643961d52f745f9b6c8c1bd96850a51c92be5f43628a0d3e08321a";
+  modelName = null;
   predictionInput = {
     image: imageBase64,
     scale: 2,
