@@ -8,29 +8,33 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
+  // ✅ Respond immediately so Replicate marks webhook as delivered
+  res.status(200).end();
+
   try {
     const event = req.body;
     const predictionId = event.id;
     const status = event.status;
 
-    if (!predictionId) return res.status(400).end();
+    if (!predictionId) return;
 
-    // Always update prediction status first
-    const resultUrl = status === "succeeded"
-      ? (Array.isArray(event.output) ? event.output[0] : event.output)
-      : null;
+    const resultUrl =
+      status === "succeeded"
+        ? Array.isArray(event.output)
+          ? event.output[0]
+          : event.output
+        : null;
 
+    // Update prediction status
     await supabase.from("predictions").upsert({
       id: predictionId,
       status,
       result_url: resultUrl,
-      completed_at: new Date().toISOString()
+      completed_at: new Date().toISOString(),
     });
 
-    // Only deduct credits and log on success
+    // Only deduct credits on success
     if (status === "succeeded" && resultUrl) {
-
-      // Get prediction metadata from our DB
       const { data: pred } = await supabase
         .from("predictions")
         .select("*")
@@ -39,10 +43,9 @@ export default async function handler(req, res) {
 
       if (!pred?.user_id) {
         console.error("No prediction found for id:", predictionId);
-        return res.status(200).end();
+        return;
       }
 
-      // Get current credits
       const { data: profile } = await supabase
         .from("profiles")
         .select("credits")
@@ -54,11 +57,18 @@ export default async function handler(req, res) {
 
       if (currentCredits < creditsToDeduct) {
         console.error("Insufficient credits for webhook completion");
-        return res.status(200).end();
+        return;
       }
 
       // Deduct credits
       await supabase
         .from("profiles")
         .update({ credits: currentCredits - creditsToDeduct })
-        .eq("id",
+        .eq("id", pred.user_id);
+
+      console.log(`✅ Credits deducted for user ${pred.user_id}: -${creditsToDeduct}`);
+    }
+  } catch (err) {
+    console.error("Webhook processing error:", err);
+  }
+}
