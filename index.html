@@ -1419,7 +1419,7 @@ console.log(pred, error);
   }
 
 async function logEnhancement(userId, toolKey, filename, creditsUsed, resultUrl) {
-  const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro' };
+ const toolNames = { quickcrisp: 'Quick Crisp', wallpaperpro: 'Wallpaper Pro', faceenhancer: 'Face Enhancer' };
   const { error } = await sb.from('enhancements').insert({
     user_id: userId,
     tool: toolNames[toolKey],
