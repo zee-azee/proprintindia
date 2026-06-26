@@ -1339,7 +1339,7 @@ btn.textContent = selectedFile
           userId,
           scale,
           filename: selectedFile.name,
-         tool: selectedTool.key
+       tool: toolNames[selectedTool.key]
         })
       });
       const startData = await startRes.json();
