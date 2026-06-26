@@ -12,11 +12,8 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
-
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed.",
-    });
+    return res.status(405).json({ error: "Method not allowed." });
   }
 
   try {
@@ -28,35 +25,22 @@ export default async function handler(req, res) {
     } = req.body || {};
 
     if (!imageBase64) {
-      return res.status(400).json({
-        error: "No image provided.",
-      });
+      return res.status(400).json({ error: "No image provided." });
     }
-
     if (!userId) {
-      return res.status(400).json({
-        error: "No userId provided.",
-      });
+      return res.status(400).json({ error: "No userId provided." });
     }
 
     // -----------------------------
     // Credits required
     // -----------------------------
-
     let creditsRequired = 1;
-
-    if (tool === "Wallpaper Pro") {
-      creditsRequired = 10;
-    }
-
-    if (tool === "Face Enhancer") {
-      creditsRequired = 2;
-    }
+    if (tool === "Wallpaper Pro") creditsRequired = 10;
+    if (tool === "Face Enhancer") creditsRequired = 2;
 
     // -----------------------------
     // Check credits
     // -----------------------------
-
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("credits")
@@ -64,29 +48,23 @@ export default async function handler(req, res) {
       .single();
 
     if (profileError || !profile) {
-      return res.status(404).json({
-        error: "User not found.",
-      });
+      return res.status(404).json({ error: "User not found." });
     }
-
     if (profile.credits < creditsRequired) {
-      return res.status(403).json({
-        error: "Insufficient credits.",
-      });
+      return res.status(403).json({ error: "Insufficient credits." });
     }
 
     // -----------------------------
-    // Replicate Model
+    // Replicate Model Config
     // -----------------------------
-
     let version = "";
     let input = {};
 
-    // Quick Crisp
+    // ✅ Quick Crisp — prunaai/p-image-upscale
+    // Version hash unchanged — confirmed correct
     if (tool === "Quick Crisp") {
       version =
         "7135ff723ecea89c0f67afcd51e4904904586e351093465bdc7beed45941b3e0";
-
       input = {
         image: imageBase64,
         upscale_mode: "target",
@@ -98,14 +76,15 @@ export default async function handler(req, res) {
       };
     }
 
-    // Wallpaper Pro
+    // ✅ Wallpaper Pro — philz1337x/clarity-upscaler
+    // CHANGED: updated version hash to latest (7787569e...)
+    // CHANGED: renamed "scale_factor" → "upscale" (correct param name)
     else if (tool === "Wallpaper Pro") {
       version =
-        "96c34bbe9aae48023bb102b0386f62a88ecd05bcdac34e95ca10857af055e895";
-
+        "7787569e916746b4d7a19b7dbf5439fbcfd4d39445f875fc6e15d4b49786e46b";
       input = {
         image: imageBase64,
-        scale_factor: 4,
+        upscale: 4,                          // ← was "scale_factor" (wrong), now "upscale" (correct)
         dynamic: 6,
         creativity: 0.35,
         resemblance: 0.6,
@@ -116,21 +95,20 @@ export default async function handler(req, res) {
       };
     }
 
-    // Face Enhancer
+    // ✅ Face Enhancer — tencentarc/gfpgan
+    // CHANGED: updated version hash to explicit latest (0fbacf7a...)
     else {
       version =
-        "297a243ce8643961d52f745f9b6c8c1bd96850a51c92be5f43628a0d3e08321a";
-
+        "0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c";
       input = {
-        img: imageBase64,
+        img: imageBase64,                    // ← "img" is correct for GFPGAN (unchanged)
         scale: 2,
       };
     }
 
     // -----------------------------
-    // Start Replicate
+    // Start Replicate prediction
     // -----------------------------
-
     const prediction = await replicate.predictions.create({
       version,
       input,
@@ -139,9 +117,8 @@ export default async function handler(req, res) {
     });
 
     // -----------------------------
-    // Save Prediction
+    // Save Prediction to Supabase
     // -----------------------------
-
     const { error: insertError } = await supabase
       .from("predictions")
       .insert({
@@ -155,7 +132,7 @@ export default async function handler(req, res) {
       });
 
     if (insertError) {
-      console.error(insertError);
+      console.error("Supabase insert error:", insertError);
     }
 
     return res.status(200).json({
@@ -163,10 +140,7 @@ export default async function handler(req, res) {
       predictionId: prediction.id,
     });
   } catch (err) {
-    console.error(err);
-
-    return res.status(500).json({
-      error: err.message,
-    });
+    console.error("Handler error:", err);
+    return res.status(500).json({ error: err.message });
   }
 }
